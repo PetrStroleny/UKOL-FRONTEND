@@ -60,7 +60,7 @@ const Page = styled("div")`
 
   > div:last-of-type {
     width: 100%;
-    margin-left: 350px;
+    margin-left: 320px;
     padding: 40px 40px 160px 40px;  
   }
 `;

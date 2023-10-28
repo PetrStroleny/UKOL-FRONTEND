@@ -190,7 +190,7 @@ const ShoppingList = () => {
                         
                         {shoppingItems.length != 0 ? 
                             <>
-                                <CheckBox label="Ukázat dokončené" onClick={() => setShowDone(p => !p)} checked={showDone} />
+                                <CheckBox label="Zobrazit dokončené" onClick={() => setShowDone(p => !p)} checked={showDone} />
                                 <ShoppingItemsWrapper>
                                     {shoppingItems.filter((shoppingItem) => showDone ? true : shoppingItem.done == false).map((shoppingItem, i) => 
                                         <ShoppingItem 

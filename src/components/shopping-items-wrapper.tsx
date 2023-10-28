@@ -16,7 +16,7 @@ const Wrapper = styled("div")`
     height: 100%;
     display: grid;
     gap: 20px;
-    grid-template-columns: repeat(auto-fill, minmax(264px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     
     @media only screen and (max-width: ${p => p.theme.breakPoints.mobile}px) {
         gap: 13px;

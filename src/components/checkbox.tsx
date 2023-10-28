@@ -10,16 +10,16 @@ interface CheckBoxProps {
 
 const CheckBox: FC<CheckBoxProps> = ({checked, onClick, label}) => (
     <Wrapper className="hover-active" onClick={onClick}>
-        {label && 
-            <Label>
-                {label}
-            </Label>
-        }
         <Content className={checked ? "checked" : ""}>
             {checked && 
                 <i className="fa fa-check" />
             }
         </Content>
+        {label && 
+            <Label>
+                {label}
+            </Label>
+        }
     </Wrapper>
 );
 
@@ -28,6 +28,8 @@ const Wrapper = styled("div")`
    display: flex;
    gap: 12px;
    width: fit-content;
+   padding: 8px;
+   border-radius: 999px;
 `;
 
 const Label = styled("p")`

@@ -26,6 +26,8 @@ const Wrapper = styled(Link)<{hrefactive: boolean}>`
 
     &.isActive {
         background-color: ${p => p.theme.primitives.greenHover};
+        border: 1px solid ${p => p.theme.primitives.green};
+        margin: -1px 7px;
     }
 
     &:hover {

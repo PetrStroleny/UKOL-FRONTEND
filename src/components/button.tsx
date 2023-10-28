@@ -28,7 +28,6 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({children, onClick, b
 
 const Wrapper = styled("button")`
     cursor: pointer;
-    padding: 9px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -39,7 +38,7 @@ const Wrapper = styled("button")`
     font: ${p => p.theme.fontStyles.b2};
 
     &.${ButtonShape.RECTANGLE} {
-        padding: 8px 10px;
+        padding: 10px;
         border-radius: 12px;
     }
 

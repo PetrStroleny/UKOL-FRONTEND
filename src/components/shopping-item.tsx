@@ -31,7 +31,7 @@ const ShoppingItem: FC<ShoppingItemProps> = ({children, done, onDoneToogle, onDe
 
 const Wrapper = styled("div")`
     padding: 20px;
-    border-radius: 8px;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -40,6 +40,10 @@ const Wrapper = styled("div")`
     &.done {
         border: 2px solid ${p => p.theme.primitives.green};
         margin: -2px;
+    }
+
+    > p {
+        font: ${p => p.theme.fontStyles.b2};   
     }
 
     > div:first-of-type {
