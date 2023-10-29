@@ -192,7 +192,11 @@ const ShoppingList = () => {
                             <>
                                 <CheckBox label="Zobrazit dokončené" onClick={() => setShowDone(p => !p)} checked={showDone} />
                                 <ShoppingItemsWrapper>
-                                    {shoppingItems.filter((shoppingItem) => showDone ? true : shoppingItem.done == false).map((shoppingItem, i) => 
+                                    {shoppingItems.sort((a, b) => {
+                                    if(a.done == b.done) return 0;
+                                    if (a.done) return 1;
+                                    return -1;
+                                }).filter((shoppingItem) => showDone ? true : shoppingItem.done == false).map((shoppingItem, i) => 
                                         <ShoppingItem 
                                             key={i} 
                                             onDelete={() => setModalConfirmItemDeleteID(shoppingItem.id)}
