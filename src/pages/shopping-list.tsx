@@ -25,7 +25,7 @@ export interface User {
 const ShoppingList = () => {
     const {activeUser, showContextMenu, shoppingLists, setShoppingLists} = useContext(GlobalContext);
 
-    const {shoppingListName} = useParams();
+    const {shoppingListHref} = useParams();
     const [_, setLocation] = useLocation();
 
     const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
@@ -47,9 +47,19 @@ const ShoppingList = () => {
     const optionsRef = useRef(null);
 
     useEffect(() => {
-        switch (shoppingListName) {
+        const selectedShoppingList = shoppingLists.filter((shoppingList) => shoppingList.href == shoppingListHref)[0];
+        setPageHeader(selectedShoppingList.label);
+
+        switch (shoppingListHref) {
+            case "pondelni-oslava": {
+                setShoppingItems([
+                    {name: "Dort", done: false, id: 1},
+                    {name: "Svíčky", done: false, id: 2},
+                    {name: "Džus", done: false, id: 3},
+                ]);
+                break;
+            }
             case "uterni-oslava": {
-                setPageHeader("Úterní oslava");
                 setShoppingItems([
                     {name: "Dort", done: false, id: 1},
                     {name: "Svíčky", done: false, id: 2},
@@ -58,15 +68,17 @@ const ShoppingList = () => {
                 break;
             }
             case "stredecni-pivo": {
-                setPageHeader("Středeční pivo");
                 setShoppingItems([
                     {name: "Pivo", done: false, id: 1},
                     {name: "Okurky", done: false, id: 2},
                 ]);
                 break;
             }
+            default: {
+                setShoppingItems([]);
+            }
         }
-    }, [shoppingListName]);
+    }, [shoppingListHref]);
 
     return (
         <>
@@ -81,7 +93,7 @@ const ShoppingList = () => {
                     removeShoppingList={() => {
                         let deletedWasFirst = false;
                         setShoppingLists(shoppingLists.filter((shoppingList, i) => {
-                            const  willBeDeleted = shoppingList.href == shoppingListName
+                            const  willBeDeleted = shoppingList.href == shoppingListHref
                             if (willBeDeleted) deletedWasFirst = i == 0;
 
                             return !willBeDeleted
@@ -162,7 +174,7 @@ const ShoppingList = () => {
                                                             action: () => {
                                                                 let deletedWasFirst = false;
                                                                 setShoppingLists(shoppingLists.filter((shoppingList, i) => {
-                                                                    const  willBeDeleted = shoppingList.href == shoppingListName
+                                                                    const  willBeDeleted = shoppingList.href == shoppingListHref
                                                                     if (willBeDeleted) deletedWasFirst = i == 0;
 
                                                                     return !willBeDeleted

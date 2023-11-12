@@ -1,21 +1,21 @@
 import styled from "@emotion/styled";
-import {useEffect, useState} from "react";
-import { Route, Router, Switch, useLocation } from "wouter";
+import { useState } from "react";
+import { Route, Router, Switch } from "wouter";
+import { ContextMenu, ContextMenuItem, ContextMenuRenderer, CursorPosition } from "./components/context-menu";
 import LeftPanel from "./components/left-panel";
-import ErrorPage from "./pages/error-page";
+import HomePage from "./pages/index";
 import ShoppingList from "./pages/shopping-list";
-import { ContextMenuRenderer, ContextMenu, ContextMenuItem, CursorPosition } from "./components/context-menu";
-import { GlobalContext, UserType, ShoppingListType } from "./utils/contexts";
+import { GlobalContext, ShoppingListType, UserType } from "./utils/contexts";
 
 function App() {
 
-  const [_, setLocation] = useLocation();
-
+  const [showArchived, setShowArchived] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [activeUser, setActiveUser] = useState<UserType>(UserType.OWNER);
   const [shoppingLists, setShoppingLists] = useState<ShoppingListType[]>([
-    {label: "Úterní oslava", href: "uterni-oslava"},
-    {label: "Středeční pivo", href: "stredecni-pivo"},
+    {label: "Pondělní oslava", href: "pondelni-oslava", archived: false},
+    {label: "Úterní oslava", href: "uterni-oslava", archived: true},
+    {label: "Středeční pivo", href: "stredecni-pivo", archived: true},
   ]);
 
   function showContextMenu(items: ContextMenuItem[], snapTo?: HTMLElement, coordinates?: CursorPosition, activeItem?: number) {
@@ -29,14 +29,10 @@ function App() {
     setContextMenu(null);
   }
 
-  useEffect(() => {
-    setLocation("/uterni-oslava")
-  }, []);
-
   return (
     <>
       <GlobalContext.Provider
-        value={{shoppingLists, setShoppingLists, activeUser, setActiveUser, contextMenu, setContextMenu, showContextMenu, hideContextMenu}}
+        value={{ showArchived, setShowArchived, shoppingLists, setShoppingLists, activeUser, setActiveUser, contextMenu, setContextMenu, showContextMenu, hideContextMenu}}
       >
         <ContextMenuRenderer/>
         <Router>
@@ -44,8 +40,8 @@ function App() {
                 <LeftPanel/>
                 <div>
                   <Switch>
-                    <Route path="/:shoppingListName" component={ShoppingList}/>
-                    <Route component={ErrorPage} />
+                    <Route path="/:shoppingListHref" component={ShoppingList}/>
+                    <Route component={HomePage} />
                   </Switch>
                 </div>
             </Page>

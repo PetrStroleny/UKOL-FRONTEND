@@ -2,24 +2,49 @@ import styled from "@emotion/styled";
 import {useContext, useRef} from "react";
 import {GlobalContext, UserType, userTypeToLabel} from "../utils/contexts";
 import LeftPanelLink from "./left-panel-link";
+import Button, { ButtonType } from "./button";
+import { Link } from "wouter";
 
 const LeftPanel = () => {
 
-    const {showContextMenu, activeUser, setActiveUser, shoppingLists} = useContext(GlobalContext);
+    const {showContextMenu, activeUser, showArchived, setShowArchived, setActiveUser, shoppingLists} = useContext(GlobalContext);
 
     const userRef = useRef(null);
 
     return (
         <Wrapper>
             <div>
-                {shoppingLists.map((shoppingList, i) =>
-                    <LeftPanelLink 
-                        key={i}
-                        href={`/${shoppingList.href}`}
-                        label={shoppingList.label}
-                    />
-                )}
+                <div>
+                    <Link href="/">
+                        <Button buttonType={ButtonType.SECONDARY}>
+                            <p>
+                                <i className="fa fa-cart-shopping" />
+                                Domů
+                            </p>
+                        </Button>
+                    </Link>
+                    <Button 
+                        onClick={() => setShowArchived(!showArchived)} buttonType={showArchived ? ButtonType.SECONDARY : ButtonType.PRIMARY} 
+                    >
+                        {showArchived ? "Skrýt archivované" : "Zobrazit archivované"}
+                    </Button>
+                </div>
+                <div>
+                    {shoppingLists.filter((shoppingList) => showArchived ? true : !shoppingList.archived).sort((a, b) => {
+                                    if(a.archived == b.archived) return 0;
+                                    if (a.archived) return 1;
+                                    return -1;
+                                }).map((shoppingList, i) =>
+                        <LeftPanelLink 
+                            key={i}
+                            href={`/${shoppingList.href}`}
+                            label={shoppingList.label}
+                            leading={shoppingList.archived ? <i className="fa fa-box-archive" /> : undefined}
+                        />
+                    )}
+                </div>
             </div>
+
             <User className="hover-active" onClick={() =>
                 showContextMenu(
                     [
@@ -44,12 +69,27 @@ const Wrapper = styled("header")`
     background-color: ${p => p.theme.background.tertiary};
 
     > div:first-of-type {
-        align-items: flex-start;
         display: flex;
-        gap: 10px;
         flex-direction: column;
-    }
+        gap: 10px;
 
+        > div:first-of-type {
+            display: flex;
+            justify-content: space-between;
+            padding: 0px 10px;
+
+            > button > p > i {
+                margin-right: 5px;
+            }
+        }
+
+        > div:last-of-type {
+            align-items: flex-start;
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+    }
     width: 300px;
     max-height: 100vh;
     min-height: 100vh;

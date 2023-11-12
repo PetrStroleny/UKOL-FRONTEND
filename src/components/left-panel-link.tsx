@@ -5,13 +5,15 @@ import {Link, useRoute} from "wouter";
 interface LeftPanelLinkProps {
     href: string
     label: string
+    leading?: JSX.Element
 }
 
-const LeftPanelLink: FC<LeftPanelLinkProps> = ({href, label}) => {
+const LeftPanelLink: FC<LeftPanelLinkProps> = ({href, label, leading}) => {
     const [isActive] = useRoute(href);
     
     return(
         <Wrapper href={href} className={isActive ? "isActive" : "" }>
+            {leading}
             {label}
         </Wrapper>
     );
@@ -23,6 +25,10 @@ const Wrapper = styled(Link)<{hrefactive: boolean}>`
     border-radius: 8px;
     margin: 0px 8px;
     background-color: ${p => p.theme.background.secondary};
+
+    > i {
+        margin-right: 10px;
+    }
 
     &.isActive {
         background-color: ${p => p.theme.primitives.greenHover};
