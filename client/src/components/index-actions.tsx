@@ -1,5 +1,6 @@
-import { FC, useContext } from "react";
+import { FC, useContext, useState } from "react";
 import { useForm } from "react-hook-form";
+import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 import { GlobalContext } from "../utils/contexts";
 import Button, { ButtonType } from "./button";
 import Input from "./input";
@@ -7,7 +8,7 @@ import { ModalButtons } from "./modal";
 import ModalForm from "./modal-form";
 
 interface ModalAddShoppingListProps {
-    hide: () => void
+    hide: (refetch: boolean) => Promise<void>
 }
 
 interface ModalAddShoppingListFrom {
@@ -16,18 +17,27 @@ interface ModalAddShoppingListFrom {
 
 export const ModalAddShoppingList: FC<ModalAddShoppingListProps> = ({hide}) => {
     const { control, handleSubmit } = useForm<ModalAddShoppingListFrom>({ defaultValues: { name: "" } });
-    const {setShoppingLists, shoppingLists} = useContext(GlobalContext);
+    const [loading, setLoading] = useState(false);
+    const { activeUserToken } = useContext(GlobalContext);
 
-    function onSubmit(data: ModalAddShoppingListFrom) {
-        setShoppingLists([...shoppingLists, {label: data.name, href: encodeURI(data.name), archived: false}])
-        hide();
+    async function onSubmit(data: ModalAddShoppingListFrom) {
+        try {
+            setLoading(true);
+            await postData("shopping-list/edit-or-create", {...data, id: 0}, activeUserToken);
+            await hide(true);
+        } catch(e) {
+            console.error(e);
+            alert(GENERAL_ERROR_MESSAGE);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
         <ModalForm 
             onSubmit={handleSubmit(onSubmit)}
             heading="Přidat nákupní seznam" 
-            hide={hide}
+            hide={() => hide(false)}
         >
             <Input 
                 name="name" 
@@ -38,12 +48,12 @@ export const ModalAddShoppingList: FC<ModalAddShoppingListProps> = ({hide}) => {
 
             <ModalButtons>
                 <div>
-                    <Button type="button" onClick={hide}>
+                    <Button disabled={loading} type="button" onClick={() => hide(false)}>
                         Zrušit
                     </Button>
                 </div>
                 <div>
-                    <Button buttonType={ButtonType.PRIMARY}>
+                    <Button loading={loading} buttonType={ButtonType.PRIMARY}>
                         Přidat
                     </Button>
                 </div>

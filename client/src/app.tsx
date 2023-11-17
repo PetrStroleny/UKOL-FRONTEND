@@ -5,18 +5,15 @@ import { ContextMenu, ContextMenuItem, ContextMenuRenderer, CursorPosition } fro
 import LeftPanel from "./components/left-panel";
 import HomePage from "./pages/index";
 import ShoppingList from "./pages/shopping-list";
-import { GlobalContext, ShoppingListType, UserType } from "./utils/contexts";
+import { GlobalContext } from "./utils/contexts";
+import { SWRConfig } from "swr";
+import { getData } from "./network";
 
 function App() {
 
   const [showArchived, setShowArchived] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
-  const [activeUser, setActiveUser] = useState<UserType>(UserType.OWNER);
-  const [shoppingLists, setShoppingLists] = useState<ShoppingListType[]>([
-    {label: "Pondělní oslava", href: "pondelni-oslava", archived: false},
-    {label: "Úterní oslava", href: "uterni-oslava", archived: true},
-    {label: "Středeční pivo", href: "stredecni-pivo", archived: true},
-  ]);
+  const [activeUserToken, setActiveUserToken] = useState("312ghdsa123");
 
   function showContextMenu(items: ContextMenuItem[], snapTo?: HTMLElement, coordinates?: CursorPosition, activeItem?: number) {
     setTimeout(() => {
@@ -32,19 +29,21 @@ function App() {
   return (
     <>
       <GlobalContext.Provider
-        value={{ showArchived, setShowArchived, shoppingLists, setShoppingLists, activeUser, setActiveUser, contextMenu, setContextMenu, showContextMenu, hideContextMenu}}
+        value={{ showArchived, setShowArchived, activeUserToken, setActiveUserToken, contextMenu, setContextMenu, showContextMenu, hideContextMenu}}
       >
         <ContextMenuRenderer/>
         <Router>
+          <SWRConfig value={{fetcher: (url) => getData(url, activeUserToken)}}>
             <Page>
                 <LeftPanel/>
                 <div>
                   <Switch>
-                    <Route path="/:shoppingListHref" component={ShoppingList}/>
+                    <Route path="/:shoppingListSlug" component={ShoppingList}/>
                     <Route component={HomePage} />
                   </Switch>
                 </div>
             </Page>
+          </SWRConfig>
         </Router>
       </GlobalContext.Provider>
     </>

@@ -1,15 +1,24 @@
 import styled from "@emotion/styled";
-import {useContext, useRef} from "react";
-import {GlobalContext, UserType, userTypeToLabel} from "../utils/contexts";
-import LeftPanelLink from "./left-panel-link";
+import { useContext, useRef } from "react";
+import useSWR from "swr";
+import { Link, useLocation } from "wouter";
+import ErrorPage from "../pages/error-page";
+import { GlobalContext, ShoppingListType, User } from "../utils/contexts";
 import Button, { ButtonType } from "./button";
-import { Link } from "wouter";
+import LeftPanelLink from "./left-panel-link";
 
 const LeftPanel = () => {
+    const {showContextMenu, activeUserToken, setActiveUserToken, showArchived, setShowArchived} = useContext(GlobalContext);
+    const { data: shoppingLists, error: shoppingListsError } = useSWR<ShoppingListType[]>("shopping-list");
+    const { data: users, error: usersError } = useSWR<User[]>("user");
 
-    const {showContextMenu, activeUser, showArchived, setShowArchived, setActiveUser, shoppingLists} = useContext(GlobalContext);
+    const [_, setLocation] = useLocation();
 
-    const userRef = useRef(null);
+    const userRef = useRef(null);   
+
+    if (shoppingListsError || usersError) return <ErrorPage/>;
+
+    if (!shoppingLists || !users) return <>Načítání...</>;
 
     return (
         <Wrapper>
@@ -37,26 +46,29 @@ const LeftPanel = () => {
                                 }).map((shoppingList, i) =>
                         <LeftPanelLink 
                             key={i}
-                            href={`/${shoppingList.href}`}
-                            label={shoppingList.label}
+                            href={`/${shoppingList.slug}`}
+                            label={shoppingList.name}
                             leading={shoppingList.archived ? <i className="fa fa-box-archive" /> : undefined}
                         />
                     )}
                 </div>
             </div>
 
-            <User className="hover-active" onClick={() =>
+            <UserDiv className="hover-active" onClick={() =>
                 showContextMenu(
-                    [
-                        {label: userTypeToLabel(UserType.OWNER), action: () => setActiveUser(UserType.OWNER)},
-                        {label: userTypeToLabel(UserType.USER), action: () => setActiveUser(UserType.USER)},
-                    ], userRef.current
+                    users.map(user => ({
+                        label: user.name, 
+                        action: () => {
+                            setActiveUserToken(user.token); 
+                            setLocation("/");
+                    }})), 
+                    userRef.current,
                 )
             }>
                 <p ref={userRef}>
-                    {userTypeToLabel(activeUser)}
+                    {users.filter(user => user.token == activeUserToken)[0].name}
                 </p>
-            </User>
+            </UserDiv>
         </Wrapper>
     );
 }
@@ -67,6 +79,7 @@ const Wrapper = styled("header")`
     position: fixed;
     padding: 8px 0px;
     background-color: ${p => p.theme.background.tertiary};
+    overflow-y: auto;
 
     > div:first-of-type {
         display: flex;
@@ -96,13 +109,13 @@ const Wrapper = styled("header")`
     box-shadow: 0px 0.8px 0.9px ${p => p.theme.background.secondary},0px 1.6px 3.6px ${p => p.theme.background.secondary};
 `;
 
-const User = styled("div")`
+const UserDiv = styled("div")`
     display: flex;
     align-items: center; 
     cursor: pointer;
     width: calc(100% - 16px);
     border-radius: 8px;
-    margin: 0px 8px;
+    margin: 8px 8px 0px 8px;
     background-color: ${p => p.theme.background.secondary};
 
     > p {
