@@ -56,15 +56,16 @@ router.post("/edit-or-create", validate([
         const jsonData = req.body;
         const slug = slugify(jsonData.name);
 
-        if (jsonShoppingLists.some(shoppingList => shoppingList.slug == slug)) {
+        
+        const editing = jsonData.id != 0;
+        
+        if (jsonShoppingLists.some(shoppingList => editing ? (shoppingList.id != jsonData.id && shoppingList.slug == slug) : shoppingList.slug == slug)) {
             res.status(400).send({
                 errorMessage: "Shopping list name already exists",
             });
             return;
         }
-        
-        const editing = jsonData.id != 0;
-        
+
         let newShoppingLists = [];
 
         const loggedID = await getLoggedID(req, res);
