@@ -61,7 +61,7 @@ router.post("/edit-or-create", validate([
         
         if (jsonShoppingLists.some(shoppingList => editing ? (shoppingList.id != jsonData.id && shoppingList.slug == slug) : shoppingList.slug == slug)) {
             res.status(400).send({
-                errorMessage: "Shopping list name already exists",
+                errorMessage: "Shopping list with this name already exists",
             });
             return;
         }
