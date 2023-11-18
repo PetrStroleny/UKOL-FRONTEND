@@ -13,9 +13,10 @@ import { GlobalContext, ShoppingListType } from "../utils/contexts";
 import ErrorPage from "./error-page";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 
-export interface ShoppingItem {
+export interface ShoppingItemType {
     name: string
     done: boolean
+    count: number
     id: number
 }
 
@@ -27,7 +28,7 @@ export interface User {
 
 const ShoppingList = () => {
     const {shoppingListSlug} = useParams();
-    const { data, error, mutate: mutateShoppingList } = useSWR<{list: ShoppingListType, items: ShoppingItem[], users: User[]}>(`shopping-list/${shoppingListSlug}`);
+    const { data, error, mutate: mutateShoppingList } = useSWR<{list: ShoppingListType, items: ShoppingItemType[], users: User[]}>(`shopping-list/${shoppingListSlug}`);
     
     const { activeUserToken, showContextMenu } = useContext(GlobalContext);
 
@@ -174,7 +175,7 @@ const ShoppingList = () => {
                                         <ShoppingItem 
                                             key={i} 
                                             onDelete={() => setModalConfirmItemDeleteID(shoppingItem.id)}
-                                            done={shoppingItem.done} 
+                                            {...shoppingItem}
                                             onDoneToogle={async () => {
                                                 try {
                                                     console.log(shoppingItem.id);

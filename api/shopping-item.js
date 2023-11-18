@@ -60,9 +60,21 @@ router.post("/toggle-done/:id",  async (req, res) => {
             });
             return;
         }
-        
-        const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
 
+        const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
+        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
+
+        const loggedID = await getLoggedID(req, res);
+        if (!jsonShoppingLists.some(shoppingList => 
+            (shoppingList.members.includes(loggedID) || shoppingList.owner == loggedID) && 
+            shoppingList["shopping-items"].includes(Number(req.params.id)))
+        ) {
+            res.status(409).send({
+                errorMessage: "Logged user not member nor user of list",
+            });
+            return;
+        }
+        
         const newShoppingItems = jsonShoppingItems.map(shoppingItem => (shoppingItem.id == Number(req.params.id)) ? ({...shoppingItem, done: !shoppingItem.done}) : shoppingItem);
 
         fs.writeFileSync("./shopping-items.json", JSON.stringify(newShoppingItems));
@@ -75,8 +87,9 @@ router.post("/toggle-done/:id",  async (req, res) => {
 });
 
 router.post("/create", validate([
-        body("shopping-list-id").isInt(), 
+        body("shopping-list-id").isInt({min: 1}), 
         body("name").isLength({min: 1, max: 150}),
+        body("count").isInt({min: 1, max: 999}),
     ]), async (req, res) => {    
     try {
         const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
@@ -86,12 +99,13 @@ router.post("/create", validate([
         let newShoppingItems = jsonShoppingItems;
         let id = 0;
         
+        const newShoppingItem = {name: jsonData.name, done: false, count: Number(jsonData.count)};
         if (jsonShoppingItems.length != 0) {
             id = jsonShoppingItems[jsonShoppingItems.length - 1].id + 1;
-            newShoppingItems = [{id: id, name: jsonData.name, done: false}, ...jsonShoppingItems];
+            newShoppingItems = [{id: id, ...newShoppingItem}, ...jsonShoppingItems];
         } else {
             id = 1;
-            newShoppingItems = [{id: id, name: jsonData.name, done: false}];
+            newShoppingItems = [{id: id, ...newShoppingItem}];
         }
 
         const newShoppingLists = jsonShoppingLists.map(shoppingList => {

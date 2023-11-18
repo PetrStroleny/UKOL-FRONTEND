@@ -2,16 +2,19 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 import CheckBox from "./checkbox";
 import Button, { ButtonShape } from "./button";
+import { ShoppingItemType } from "../pages/shopping-list";
 
-interface ShoppingItemProps {
+interface ShoppingItemProps extends ShoppingItemType {
     children: string
-    done: boolean
     onDoneToogle: () => void
     onDelete: () => void
 }
 
-const ShoppingItem: FC<ShoppingItemProps> = ({children, done, onDoneToogle, onDelete}) => (
+const ShoppingItem: FC<ShoppingItemProps> = ({children, count, done, onDoneToogle, onDelete}) => (
     <Wrapper className={done ? "done" : "" }>
+        <p>
+            {count}
+        </p>    
         <p>
             {children}
         </p>    

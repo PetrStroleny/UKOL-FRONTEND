@@ -9,6 +9,7 @@ import ModalForm from "./modal-form";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 import { GlobalContext } from "../utils/contexts";
 import { useLocation } from "wouter";
+import { validateIsNumber } from "../utils/form";
 
 interface ModalEditShoppingListNameProps {
     defaultValue: string
@@ -78,12 +79,15 @@ interface ModalAddShoppingItemProps {
 
 interface ModalAddShoppingItemFrom {
     name: string
+    count: number
 }
 
 export const ModalAddShoppingItem: FC<ModalAddShoppingItemProps> = ({hide, id}) => {
     const { activeUserToken } = useContext(GlobalContext);
 
-    const { control, handleSubmit } = useForm<ModalAddShoppingItemFrom>({ defaultValues: { name: "" } });
+    const { control, handleSubmit } = useForm<ModalAddShoppingItemFrom>({ defaultValues: { name: "", count: 1 } });
+
+    const [customPriceError, setCustomPriceError] = useState("");
 
     const [loading, setLoading] = useState(false);
 
@@ -111,6 +115,24 @@ export const ModalAddShoppingItem: FC<ModalAddShoppingItemProps> = ({hide, id}) 
                 control={control} 
                 rules={{ required: { message: "Vyplňte prosím název položky", value: true } }}
                 placeholder="Název"
+            />
+
+            <Input 
+                name="count" 
+                control={control} 
+                number
+                customError={customPriceError ?? ""}
+                rules={{ 
+                    required: { message: "Vyplňte prosím počet položky", value: true },
+                    validate: (value: string) => validateIsNumber(
+                        value, 
+                        setCustomPriceError, 
+                        999, 
+                        false, 
+                        {negativeError: "Počet položky musí být kladné číslo", maxValueError: "Počet položky musí být menší než-li 999"},
+                    ) 
+                }}
+                placeholder="Počet"
             />
 
             <ModalButtons>

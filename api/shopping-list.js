@@ -8,8 +8,6 @@ import { slugify } from "./utils/string.js";
 
 const router = express.Router();
 
-// @TODO toggle-archive/:id
-
 router.delete("/delete/:id",  async (req, res) => {
     try {
         if (isNaN(Number(req.params.id))) {
@@ -49,22 +47,27 @@ router.delete("/delete/:id",  async (req, res) => {
 });
 
 router.post("/edit-or-create", validate([
-    body("id").isInt(), 
+    body("id").isInt({min: 0}), 
     body("name").isLength({min: 1, max: 150}),
 ]), async (req, res) => {
     try {  
-
-        //@todo same name check
         const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
 
         const jsonData = req.body;
+        const slug = slugify(jsonData.name);
+
+        if (jsonShoppingLists.some(shoppingList => shoppingList.slug == slug)) {
+            res.status(400).send({
+                errorMessage: "Shopping list name already exists",
+            });
+            return;
+        }
         
         const editing = jsonData.id != 0;
         
         let newShoppingLists = [];
 
         const loggedID = await getLoggedID(req, res);
-        const slug = slugify(jsonData.name);
         if (editing) {
             if (!jsonShoppingLists.some(shoppingList => shoppingList.id == jsonData.id && shoppingList.owner == loggedID)) {
                 res.status(400).send({
@@ -116,6 +119,37 @@ router.post("/leave/:id", async (req, res) => {
             ({...shoppingList, members: shoppingList.members.filter(member => member != loggedID)}) : 
             shoppingList
         );
+        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
+        res.send({message: "Ok"});
+    } catch (e) {
+        res.status(500).send({
+            errorMessage: "Internal server error",
+        });
+    }
+});
+
+router.post("/toggle-archive/:id",  async (req, res) => {
+    try {
+        if (isNaN(Number(req.params.id))) {
+            res.status(400).send({
+                errorMessage: "Id must be integer",
+            });
+            return;
+        }
+        
+        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
+
+        const loggedID = await getLoggedID(req, res);
+
+        if (!jsonShoppingLists.some(jsonShoppingList => jsonShoppingList.owner == loggedID && jsonShoppingList.id == Number(req.params.id))) {
+            res.status(409).send({
+                errorMessage: "User is not owner of list",
+            });
+            return;
+        }
+
+        const newShoppingLists = jsonShoppingLists.map(shoppingList => (shoppingList.id == Number(req.params.id)) ? ({...shoppingList, archived: !shoppingList.archived}) : shoppingList);
+
         fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
         res.send({message: "Ok"});
     } catch (e) {
@@ -194,7 +228,7 @@ router.get("/:slug", async (req, res) => {
             });
             return;
         }
-        console.log("xxx");
+        
         const _shoppingList = jsonShoppingLists.filter(shoppingList => shoppingList.slug == req.params.slug)[0];
         res.send({
             list: _shoppingList, 

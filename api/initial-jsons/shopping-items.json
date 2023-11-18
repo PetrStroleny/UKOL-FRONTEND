@@ -1,10 +1,10 @@
 [
-    {"id": 1, "name": "Dort", "done": false},
-    {"id": 2, "name": "Svíčky", "done": false},
-    {"id": 3, "name": "Džus", "done": false},
-    {"id": 4, "name": "Dort", "done": false},
-    {"id": 5, "name": "Svíčky", "done": false},
-    {"id": 6, "name": "Džus", "done": false},
-    {"id": 7, "name": "Pivo", "done": false},
-    {"id": 8, "name": "Okurky", "done": false}
+    {"id": 1, "name": "Dort", "done": false, "count": 1},
+    {"id": 2, "name": "Svíčky", "done": false, "count": 1},
+    {"id": 3, "name": "Džus", "done": false, "count": 1},
+    {"id": 4, "name": "Dort", "done": false, "count": 1},
+    {"id": 5, "name": "Svíčky", "done": false, "count": 1},
+    {"id": 6, "name": "Džus", "done": false, "count": 1},
+    {"id": 7, "name": "Pivo", "done": false, "count": 1},
+    {"id": 8, "name": "Okurky", "done": false, "count": 2}
 ]
