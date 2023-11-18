@@ -3,7 +3,7 @@ import { returnJSONFromFile } from "./_fs.js";
 export async function LoggedMiddleWare(req, res, next) {
     try {
         const authHeader = req.get("Authorization");
-        if (authHeader == "" || authHeader.length == 0) {
+        if (!authHeader || authHeader == "" || authHeader.length == 0) {
             res.status(409).send({
                 errorMessage: "Authorization empty",
             });
