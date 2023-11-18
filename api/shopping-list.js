@@ -110,7 +110,7 @@ router.post("/leave/:id", async (req, res) => {
 
         if (!jsonShoppingLists.some(shoppingList => shoppingList.id == Number(req.params.id) && shoppingList.members.includes(loggedID))) {
             res.status(400).send({
-                errorMessage: "Shopping item does not exist",
+                errorMessage: "Shopping list does not exist",
             });
             return;
         }
