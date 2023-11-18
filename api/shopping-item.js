@@ -39,7 +39,7 @@ router.delete("/delete/:id",  async (req, res) => {
         const newShoppingItems = jsonShoppingItems.filter(shoppingItem => shoppingItem.id != Number(req.params.id));
         const newShoppingLists = jsonShoppingLists.map(shoppingList => {
             if (!shoppingList["shopping-items"].includes(Number(req.params.id))) return shoppingList;
-            return {...shoppingList, "shopping-items": shoppingList["shopping-items"].filter(shoppingItem => shoppingItem.id != Number(req.params.id))};
+            return {...shoppingList, "shopping-items": shoppingList["shopping-items"].filter(shoppingItem => shoppingItem != Number(req.params.id))};
         });
         
         fs.writeFileSync("./shopping-items.json", JSON.stringify(newShoppingItems));
@@ -102,7 +102,7 @@ router.post("/create", validate([
         const newShoppingItem = {name: jsonData.name, done: false, count: Number(jsonData.count)};
         if (jsonShoppingItems.length != 0) {
             id = jsonShoppingItems[jsonShoppingItems.length - 1].id + 1;
-            newShoppingItems = [{id: id, ...newShoppingItem}, ...jsonShoppingItems];
+            newShoppingItems = [...jsonShoppingItems, {id: id, ...newShoppingItem}];
         } else {
             id = 1;
             newShoppingItems = [{id: id, ...newShoppingItem}];
