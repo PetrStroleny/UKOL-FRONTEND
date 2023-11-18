@@ -128,7 +128,7 @@ router.post("/leave/:id", async (req, res) => {
     }
 });
 
-router.post("/toggle-archive/:id",  async (req, res) => {
+router.post("/toggle-archived/:id",  async (req, res) => {
     try {
         if (isNaN(Number(req.params.id))) {
             res.status(400).send({
@@ -221,7 +221,7 @@ router.get("/:slug", async (req, res) => {
         const jsonUsers = await returnJSONFromFile("users", res);
 
         const loggedID = await getLoggedID(req, res);
-        console.log(req.params.slug);
+
         if (!jsonShoppingLists.some(shoppingList => shoppingList.slug == req.params.slug && (shoppingList.members.includes(loggedID) || shoppingList.owner == loggedID))) {
             res.status(400).send({
                 errorMessage: "Shopping item does not exist",

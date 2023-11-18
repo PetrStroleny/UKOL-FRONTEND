@@ -22,7 +22,6 @@ const HomePage = () => {
             {modalAddShoppingList && 
                 <ModalAddShoppingList hide={async(refetch: boolean) =>{ 
                     if (refetch) await mutate();
-                    
                     setModalAddShoppingList(false);
                 }}/>
             }

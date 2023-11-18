@@ -10,7 +10,6 @@ import { SWRConfig } from "swr";
 import { getData } from "./network";
 
 function App() {
-
   const [showArchived, setShowArchived] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [activeUserToken, setActiveUserToken] = useState("312ghdsa123");

@@ -11,6 +11,57 @@ import { GlobalContext } from "../utils/contexts";
 import { useLocation } from "wouter";
 import { validateIsNumber } from "../utils/form";
 
+interface ModalArchiveProps {
+    archived: boolean
+    hide: (refetch?: boolean) => Promise<void>
+    id: number
+    shoppingListName: string
+}
+
+export const ModalArchive: FC<ModalArchiveProps> = ({hide, id, shoppingListName, archived}) => {
+    const { activeUserToken } = useContext(GlobalContext);
+
+    const [loading, setLoading] = useState(false);
+
+    async function toggleArchivedShoppingList() {
+        try {
+            setLoading(true);
+            await postData(`shopping-list/toggle-archived/${id}`, {}, activeUserToken);
+            await hide(true);
+
+        } catch(e) {
+            console.error(e);
+            alert(GENERAL_ERROR_MESSAGE);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <Modal
+            heading={archived ? `Zrušit archovaci ${shoppingListName}` : `Archivovat ${shoppingListName}`}
+            hide={hide}
+        >
+            <ModalDescription>
+                Opravdu chcete {archived ? `zrušit archovaci ${shoppingListName}` : `archivovat ${shoppingListName}`}?
+            </ModalDescription>
+
+            <ModalButtons>
+                <div>
+                    <Button disabled={loading} onClick={() => hide()}>
+                        Zrušit
+                    </Button>
+                </div>
+                <div>
+                    <Button loading={loading} onClick={toggleArchivedShoppingList} buttonType={ButtonType.TERTIARY}>
+                    {archived ? "Zrušit archovaci" : "Archivovat"}
+                    </Button>
+                </div>
+            </ModalButtons>
+        </Modal>
+    );
+}
+
 interface ModalEditShoppingListNameProps {
     defaultValue: string
     hide: (newSlug?: string) => Promise<void>
@@ -31,7 +82,6 @@ export const ModalEditShoppingListName: FC<ModalEditShoppingListNameProps> = ({h
     async function onSubmit(data: ModalEditShoppingListNameFrom) {
         try {
             setLoading(true);
-            console.log(id);
             const res = await postData("shopping-list/edit-or-create", {...data, id}, activeUserToken);
             const body = await res.json();
             await hide(body?.slug);

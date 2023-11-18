@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet";
 import useSWR, { mutate } from "swr";
 import { useParams } from "wouter";
@@ -8,8 +8,8 @@ import CheckBox from "../components/checkbox";
 import EmptyState from "../components/emptyState";
 import ShoppingItem from "../components/shopping-item";
 import ShoppingItemsWrapper from "../components/shopping-items-wrapper";
-import { ModalAddShoppingItem, ModalChangeUsers, ModalConfirmItemDelete, ModalConfirmShoppingListDelete, ModalEditShoppingListName, ModalLeaveShoppingList } from "../components/shopping-list-actions";
-import { GlobalContext, ShoppingListType } from "../utils/contexts";
+import { ModalAddShoppingItem, ModalArchive, ModalChangeUsers, ModalConfirmItemDelete, ModalConfirmShoppingListDelete, ModalEditShoppingListName, ModalLeaveShoppingList } from "../components/shopping-list-actions";
+import { GlobalContext, ShoppingListType, User } from "../utils/contexts";
 import ErrorPage from "./error-page";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 
@@ -20,28 +20,27 @@ export interface ShoppingItemType {
     id: number
 }
 
-export interface User {
-    id: number
-    name: string
-    token: string
-}
-
 const ShoppingList = () => {
     const {shoppingListSlug} = useParams();
     const { data, error, mutate: mutateShoppingList } = useSWR<{list: ShoppingListType, items: ShoppingItemType[], users: User[]}>(`shopping-list/${shoppingListSlug}`);
     
-    const { activeUserToken, showContextMenu } = useContext(GlobalContext);
+    const { activeUserToken, showContextMenu, showArchived, setShowArchived } = useContext(GlobalContext);
 
     const [modalEditShoppingListName, setModalEditShoppingListName] = useState(false);
     const [modalAddShoppingItem, setModalAddShoppingItem] = useState(false);
     const [modalChangeUsers, setModalChangeUsers] = useState(false);
     const [modalConfirmItemDeleteID, setModalConfirmItemDeleteID] = useState(-1);
     const [modalConfirmShoppingListDelete, setModalConfirmShoppingListDelete] = useState(false);
+    const [modalArchive, setModalArchive] = useState(false);
     const [modalLeaveShoppingListActive, setModalLeaveShoppingListActive] = useState(false);
 
     const [showDone, setShowDone] = useState(true);
 
     const optionsRef = useRef(null);
+
+    useEffect(() => {
+        if (data?.list.archived && !showArchived) setShowArchived(true); 
+    }, [data]);
 
     if (error) return <ErrorPage/>;
 
@@ -53,6 +52,21 @@ const ShoppingList = () => {
                 <meta property="og:title" content={`${location} | PETR LIST}`}/>
                 <title>List | PETR LIST</title>
             </Helmet>
+            {modalArchive &&
+                <ModalArchive
+                    shoppingListName={data.list.name}
+                    archived={data.list.archived}
+                    hide={async(refetch?: boolean) => {
+                        if (refetch) {
+                            if (!data.list.archived) setShowArchived(true);
+                            await mutateShoppingList();
+                            await mutate("shopping-list");
+                        }
+                        setModalArchive(false);
+                    }}
+                    id={data.list.id}
+                />
+            }
             {modalConfirmShoppingListDelete && 
                 <ModalConfirmShoppingListDelete
                     shoppingListName={data.list.name}
@@ -81,7 +95,7 @@ const ShoppingList = () => {
                         if (newSlug) {
                             window.location.href = `/${newSlug}`;
                             await mutateShoppingList();
-                            await mutate("/shopping-list");
+                            await mutate("shopping-list");
                         }
                         setModalEditShoppingListName(false);
                     }}
@@ -127,40 +141,44 @@ const ShoppingList = () => {
                                 {data.list.name}
                             </Label>
                             
-                                <Button 
-                                    ref={optionsRef} 
-                                    onClick={() => {
-                                        if (data.users.filter(user => user.id == data.list.owner)[0]?.token == activeUserToken) {
-                                            showContextMenu(
-                                                [
-                                                    {
-                                                        label: "Změnit název", 
-                                                        action: () => setModalEditShoppingListName(true),
-                                                    },
-                                                    {
-                                                        label: "Upravit členy", 
-                                                        action: () => setModalChangeUsers(true),
-                                                    },
-                                                    {
-                                                        label: "Odstranit seznam", 
-                                                        action: () => setModalConfirmShoppingListDelete(true),
-                                                    },
-                                                ], optionsRef.current
-                                            );
-                                            return;
-                                        }
+                            <Button 
+                                ref={optionsRef} 
+                                onClick={() => {
+                                    if (data.users.filter(user => user.id == data.list.owner)[0]?.token == activeUserToken) {
                                         showContextMenu(
                                             [
                                                 {
-                                                    label: "Odejít", 
-                                                    action: () => setModalLeaveShoppingListActive(true),
+                                                    label: "Změnit název", 
+                                                    action: () => setModalEditShoppingListName(true),
+                                                },
+                                                {
+                                                    label: data.list.archived ? "Zrušit archivaci" : "Archivovat", 
+                                                    action: () => setModalArchive(true),
+                                                },
+                                                {
+                                                    label: "Upravit členy", 
+                                                    action: () => setModalChangeUsers(true),
+                                                },
+                                                {
+                                                    label: "Odstranit seznam", 
+                                                    action: () => setModalConfirmShoppingListDelete(true),
                                                 },
                                             ], optionsRef.current
-                                        );                           
-                                    }}
-                                >
-                                    <i className="fa fa-ellipsis" />
-                                </Button>
+                                        );
+                                        return;
+                                    }
+                                    showContextMenu(
+                                        [
+                                            {
+                                                label: "Odejít", 
+                                                action: () => setModalLeaveShoppingListActive(true),
+                                            },
+                                        ], optionsRef.current
+                                    );                           
+                                }}
+                            >
+                                <i className="fa fa-ellipsis" />
+                            </Button>
                         </div>
                         
                         {data.items.length != 0 ? 
@@ -178,7 +196,6 @@ const ShoppingList = () => {
                                             {...shoppingItem}
                                             onDoneToogle={async () => {
                                                 try {
-                                                    console.log(shoppingItem.id);
                                                     await postData(`shopping-item/toggle-done/${shoppingItem.id}`, {}, activeUserToken);
                                                     await mutateShoppingList();
                                                 } catch (e) {
