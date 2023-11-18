@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { useContext, useRef } from "react";
-import useSWR from "swr";
+import { useContext, useEffect, useRef } from "react";
+import useSWR, {mutate} from "swr";
 import { Link, useLocation } from "wouter";
 import ErrorPage from "../pages/error-page";
 import { GlobalContext, ShoppingListType, User } from "../utils/contexts";
@@ -15,6 +15,10 @@ const LeftPanel = () => {
     const [_, setLocation] = useLocation();
 
     const userRef = useRef(null);   
+
+    useEffect(() => {
+        mutate("shopping-list");
+    }, [activeUserToken]);
 
     if (shoppingListsError || usersError) return <ErrorPage/>;
 
