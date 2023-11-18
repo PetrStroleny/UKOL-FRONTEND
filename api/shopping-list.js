@@ -8,6 +8,8 @@ import { slugify } from "./utils/string.js";
 
 const router = express.Router();
 
+// @TODO toggle-archive/:id
+
 router.delete("/delete/:id",  async (req, res) => {
     try {
         if (isNaN(Number(req.params.id))) {
@@ -51,6 +53,8 @@ router.post("/edit-or-create", validate([
     body("name").isLength({min: 1, max: 150}),
 ]), async (req, res) => {
     try {  
+
+        //@todo same name check
         const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
 
         const jsonData = req.body;
@@ -71,7 +75,7 @@ router.post("/edit-or-create", validate([
             newShoppingLists = jsonShoppingLists.map(shoppingList => shoppingList.id == jsonData.id ? {...shoppingList, name: jsonData.name, slug} : shoppingList);
         } else {
             let newShoppingList = {};
-            newShoppingList = {name: jsonData.name, slug, owner: loggedID, members: []};
+            newShoppingList = {name: jsonData.name, slug, owner: loggedID, members: [], "shopping-items": []};
             if (jsonShoppingLists.length != 0) {
                 newShoppingLists = [{id: jsonShoppingLists[jsonShoppingLists.length - 1].id + 1, ...newShoppingList}, ...jsonShoppingLists];
             } else {
@@ -80,7 +84,7 @@ router.post("/edit-or-create", validate([
         }
 
         fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
-        res.send({message: "Ok", slug, x: "xxx"});
+        res.send({message: "Ok", slug});
     } catch (e) {
         res.status(500).send({
             errorMessage: "Internal server error",
@@ -183,14 +187,14 @@ router.get("/:slug", async (req, res) => {
         const jsonUsers = await returnJSONFromFile("users", res);
 
         const loggedID = await getLoggedID(req, res);
-
+        console.log(req.params.slug);
         if (!jsonShoppingLists.some(shoppingList => shoppingList.slug == req.params.slug && (shoppingList.members.includes(loggedID) || shoppingList.owner == loggedID))) {
             res.status(400).send({
                 errorMessage: "Shopping item does not exist",
             });
             return;
         }
-
+        console.log("xxx");
         const _shoppingList = jsonShoppingLists.filter(shoppingList => shoppingList.slug == req.params.slug)[0];
         res.send({
             list: _shoppingList, 

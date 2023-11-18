@@ -41,7 +41,7 @@ router.delete("/delete/:id",  async (req, res) => {
             if (!shoppingList["shopping-items"].includes(Number(req.params.id))) return shoppingList;
             return {...shoppingList, "shopping-items": shoppingList["shopping-items"].filter(shoppingItem => shoppingItem.id != Number(req.params.id))};
         });
-        console.log("xx");
+        
         fs.writeFileSync("./shopping-items.json", JSON.stringify(newShoppingItems));
         fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
         res.send({message: "Ok"});
