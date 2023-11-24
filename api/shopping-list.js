@@ -1,10 +1,12 @@
-import express, { json } from "express";
+import express from "express";
 import { body } from "express-validator";
 import fs from "fs";
 import { returnJSONFromFile } from "./utils/_fs.js";
-import { validate } from "./validation.js";
 import { getLoggedID } from "./utils/middlewares.js";
 import { slugify } from "./utils/string.js";
+import { validate } from "./validation.js";
+
+import ShoppingList from "./models/shopping-list.js";
 
 const router = express.Router();
 
@@ -78,13 +80,16 @@ router.post("/edit-or-create", validate([
             }
             newShoppingLists = jsonShoppingLists.map(shoppingList => shoppingList.id == jsonData.id ? {...shoppingList, name: jsonData.name, slug} : shoppingList);
         } else {
-            let newShoppingList = {};
-            newShoppingList = {name: jsonData.name, slug, owner: loggedID, members: [], "shopping-items": []};
-            if (jsonShoppingLists.length != 0) {
-                newShoppingLists = [{id: jsonShoppingLists[jsonShoppingLists.length - 1].id + 1, ...newShoppingList}, ...jsonShoppingLists];
-            } else {
-                newShoppingLists = [{id: 1, ...newShoppingList}];
-            }
+            const _shoppingList = new ShoppingList({
+                name: jsonData.name,
+                slug,
+                archived: false,
+                owner: loggedID,
+            });
+
+            await _shoppingList.save();
+
+            //newShoppingList = {name: jsonData.name, slug, owner: loggedID, members: [], "shopping-items": []};
         }
 
         fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
@@ -203,11 +208,15 @@ router.post("/change-members", validate([
 
 router.get("/", async (req, res) => {   
     try {
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
+        ShoppingList.find();
+        
         
         const loggedID = await getLoggedID(req, res);
-
-        res.send(jsonShoppingLists.filter(shoppingList => shoppingList.members.includes(loggedID) || shoppingList.owner == loggedID));
+        
+        const _shoppingLists = await ShoppingList.find({
+            $or: [{"_id":{"$in":loggedID["members"]}}, {"_id":loggedID["owner"]}],
+        });
+        res.send(_shoppingLists);
     } catch (e) {
         res.status(500).send({
             errorMessage: "Internal server error",

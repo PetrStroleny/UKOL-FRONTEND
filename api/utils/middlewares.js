@@ -1,5 +1,7 @@
 import { returnJSONFromFile } from "./_fs.js";
 
+import User from "../models/user.js"; 
+
 export async function LoggedMiddleWare(req, res, next) {
     try {
         const authHeader = req.get("Authorization");
@@ -57,11 +59,8 @@ export async function getLoggedID(req, res) {
 
     const token = splitedToken[1];
 
-    const jsonUsers = await returnJSONFromFile("./users", res);
 
-    if (!jsonUsers.some(user => user["token"] == token)) {
-        throw Error("Forbidden");
-    }
+    const _user = await User.findOne({ "token": token });
 
-    return jsonUsers.filter(user => user["token"] == token)[0].id;
+    return _user.id;
 }

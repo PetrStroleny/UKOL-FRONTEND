@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Route, Router, Switch } from "wouter";
 import { ContextMenu, ContextMenuItem, ContextMenuRenderer, CursorPosition } from "./components/context-menu";
 import LeftPanel from "./components/left-panel";
@@ -7,12 +7,12 @@ import HomePage from "./pages/index";
 import ShoppingList from "./pages/shopping-list";
 import { GlobalContext } from "./utils/contexts";
 import { SWRConfig } from "swr";
-import { getData } from "./network";
+import { getData, postData } from "./network";
 
 function App() {
   const [showArchived, setShowArchived] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
-  const [activeUserToken, setActiveUserToken] = useState("312ghdsa123");
+  const [activeUserToken, setActiveUserToken] = useState("$2a$12$erYefxNdI/Cu1lVRV6za0.KdWVwgoqNZ79grqSkI6rxO9T5BtiNkC");
 
   function showContextMenu(items: ContextMenuItem[], snapTo?: HTMLElement, coordinates?: CursorPosition, activeItem?: number) {
     setTimeout(() => {
@@ -24,6 +24,10 @@ function App() {
   function hideContextMenu() {
     setContextMenu(null);
   }
+
+  useEffect(() => {
+    postData("init", {}, "");
+  });
 
   return (
     <>
