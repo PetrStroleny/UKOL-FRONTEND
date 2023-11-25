@@ -1,13 +1,13 @@
 import express from "express";
-import {returnJSONFromFile} from "./utils/_fs.js";
+import User from "./models/user.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {   
     try {
-        const jsonUsers = await returnJSONFromFile("users", res);
+        const _users = await User.find();
 
-        res.send(jsonUsers);
+        res.send(_users);
     } catch (e) {
         res.status(500).send({
             errorMessage: "Internal server error",

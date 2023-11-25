@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-import { userSchema } from "./user.js";
-
 const Schema = mongoose.Schema;
 
 const shoppingListSchema = new Schema({

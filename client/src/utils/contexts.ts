@@ -2,14 +2,14 @@ import {createContext} from "react";
 import {ContextMenu, ContextMenuItem, CursorPosition } from "../components/context-menu";
 
 export interface User {
-    id: number
+    _id: number
     name: string
     token: string
 }
 
 
 export interface ShoppingListType {
-    id: number
+    _id: number
     href: string
     slug: string
     name: string

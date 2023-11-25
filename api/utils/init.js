@@ -1,6 +1,6 @@
-import User from "./models/user.js";
-import ShoppingList from "./models/shopping-list.js";
-import ShoppingItem from "./models/shoppint-item.js";
+import User from "../models/user.js";
+import ShoppingList from "../models/shopping-list.js";
+import ShoppingItem from "../models/shopping-item.js";
 
 export async function init(req, res) {
     try {
@@ -25,25 +25,27 @@ export async function init(req, res) {
       }
       
       for (let i = 0; i < _shoppingLists.length; i++) {
-        let shoppingItemIDs = [];
-        switch(i) {
+        let currentShoppingItems = [];
+        switch (i) {
           case 0: {
-            shoppingItemIDs = [shoppingItemIDs[0], shoppingItemIDs[1], shoppingItemIDs[2]]; 
+            currentShoppingItems = [shoppingItemIDs[0], shoppingItemIDs[1], shoppingItemIDs[2]]; 
             break;
           };
           case 1: {
-            shoppingItemIDs = [shoppingItemIDs[3], shoppingItemIDs[4], shoppingItemIDs[5]];
+            currentShoppingItems = [shoppingItemIDs[3], shoppingItemIDs[4], shoppingItemIDs[5]];
             break;
           };
           case 2: {
-            shoppingItemIDs = [shoppingItemIDs[6], shoppingItemIDs[7]];
+            currentShoppingItems = [shoppingItemIDs[6], shoppingItemIDs[7]];
             break;
           };
         }
+
+
         const _newShoppingList = new ShoppingList({
           ..._shoppingLists[i], 
           owner: userIDs[0], 
-          shoppingItems: shoppingItemIDs,
+          shoppingItems: currentShoppingItems,
           members: [userIDs[1], userIDs[2]],
         });
         await _newShoppingList.save();

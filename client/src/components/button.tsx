@@ -21,7 +21,7 @@ interface ButtonProps extends ComponentProps<"button"> {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(({children, onClick, loading, buttonType, shape, ...props}, ref) => (
-    <Wrapper onClick={onClick} ref={ref} className={`${buttonType ?? "secondary-type"} ${shape ?? "rectangle"}`} {...props}>
+    <Wrapper onClick={loading ? undefined : onClick} ref={ref} className={`${buttonType ?? "secondary-type"} ${shape ?? "rectangle"}`} {...props}>
         {loading ? <ProgressSpinner/> : children}
     </Wrapper>
     )

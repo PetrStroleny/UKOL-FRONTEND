@@ -1,13 +1,12 @@
 import styled from "@emotion/styled";
 import { FC, useContext, useState } from "react";
 import { useForm } from "react-hook-form";
-import { User } from "../pages/shopping-list";
 import Button, { ButtonType } from "./button";
 import Input from "./input";
 import Modal, { ModalButtons, ModalDescription } from "./modal";
 import ModalForm from "./modal-form";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
-import { GlobalContext } from "../utils/contexts";
+import { GlobalContext, User } from "../utils/contexts";
 import { useLocation } from "wouter";
 import { validateIsNumber } from "../utils/form";
 
@@ -372,7 +371,7 @@ export const ModalChangeUsers: FC<ModalChangeUsersProps> = ({hide, users, id, _a
     async function changeMembers() {
         try {
             setLoading(true);
-            await postData("shopping-list/change-members", {members: activeUsers, id: id}, activeUserToken);
+            await postData("shopping-list/change-members", {members: activeUsers, id}, activeUserToken);
             await hide(true);
         } catch(e) {
             console.error(e);
@@ -392,11 +391,11 @@ export const ModalChangeUsers: FC<ModalChangeUsersProps> = ({hide, users, id, _a
                     <UserItem 
                         className="hover-active"
                         onClick={() => {
-                            if (activeUsers.includes(user.id)) {
-                                setActiveUsers(activeUsers.filter(userID => userID != user.id));
+                            if (activeUsers.includes(user._id)) {
+                                setActiveUsers(activeUsers.filter(userID => userID != user._id));
                                 return;
                             }
-                            setActiveUsers([...activeUsers, user.id]);
+                            setActiveUsers([...activeUsers, user._id]);
                         }}
                         key={i}
                     >
@@ -404,7 +403,7 @@ export const ModalChangeUsers: FC<ModalChangeUsersProps> = ({hide, users, id, _a
                             {user.name}
                         </p>
                         <Button>
-                            {activeUsers.includes(user.id) ? 
+                            {activeUsers.includes(user._id) ? 
                                 <i className="fa fa-check" /> 
                                     : 
                                 <i className="fa fa-xmark" />    

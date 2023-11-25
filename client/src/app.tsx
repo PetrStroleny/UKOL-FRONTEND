@@ -25,9 +25,13 @@ function App() {
     setContextMenu(null);
   }
 
+  async function init() {
+    await postData("init", {}, "");
+    location.reload();
+  } 
   useEffect(() => {
-    postData("init", {}, "");
-  });
+    init();
+  }, []);
 
   return (
     <>

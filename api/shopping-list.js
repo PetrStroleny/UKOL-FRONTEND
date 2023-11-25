@@ -1,45 +1,33 @@
 import express from "express";
 import { body } from "express-validator";
-import fs from "fs";
-import { returnJSONFromFile } from "./utils/_fs.js";
 import { getLoggedID } from "./utils/middlewares.js";
 import { slugify } from "./utils/string.js";
 import { validate } from "./validation.js";
 
+import ShoppingItem from "./models/shopping-item.js";
 import ShoppingList from "./models/shopping-list.js";
+import User from "./models/user.js";
 
 const router = express.Router();
 
 router.delete("/delete/:id",  async (req, res) => {
     try {
-        if (isNaN(Number(req.params.id))) {
-            res.status(400).send({
-                errorMessage: "Id must be integer",
-            });
-            return;
-        }
-
-        const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-
         const loggedID = await getLoggedID(req, res);
-        if (!jsonShoppingLists.some(shoppingList => shoppingList.id == Number(req.params.id) && shoppingList.owner == loggedID)) {
-            res.status(400).send({
-                errorMessage: "Shopping item does not exist",
+
+        let _shoppingList;
+        try {
+            _shoppingList = await ShoppingList.findOne({_id: req.params.id, owner: loggedID});
+            if (!_shoppingList) throw Error("Not found");
+        } catch(e) {
+            res.status(409).send({
+                errorMessage: "Logged user not owner of list or list does not exist",
             });
             return;
-        }
+        } 
 
-        let shoopingItemsToDelete = [];
-        const newShoppingLists = jsonShoppingLists.filter(shoppingItem => {
-            if (shoppingItem.id != Number(req.params.id)) return true;
-            shoopingItemsToDelete = shoppingItem["shopping-items"];
-            return false;
-        });
-        const newShoppingItems = jsonShoppingItems.filter(shoppingItem => !shoopingItemsToDelete.includes(shoppingItem.id));
+        await ShoppingItem.deleteMany({_id: {"$in":_shoppingList.shoppingItems}})
+        await ShoppingList.deleteOne({_id: req.params.id});
         
-        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
-        fs.writeFileSync("./shopping-items.json", JSON.stringify(newShoppingItems));
         res.send({message: "Ok"});
     } catch (e) {
         res.status(500).send({
@@ -49,36 +37,33 @@ router.delete("/delete/:id",  async (req, res) => {
 });
 
 router.post("/edit-or-create", validate([
-    body("id").isInt({min: 0}), 
+    body("id"), 
     body("name").isLength({min: 1, max: 150}),
 ]), async (req, res) => {
     try {  
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-
         const jsonData = req.body;
         const slug = slugify(jsonData.name);
-
         
         const editing = jsonData.id != 0;
         
-        if (jsonShoppingLists.some(shoppingList => editing ? (shoppingList.id != jsonData.id && shoppingList.slug == slug) : shoppingList.slug == slug)) {
+        const nameAlreadyExists = await ShoppingList.exists({_id: {$ne: jsonData.id}, slug: slug});
+        if (nameAlreadyExists) {
             res.status(400).send({
                 errorMessage: "Shopping list with this name already exists",
             });
             return;
         }
 
-        let newShoppingLists = [];
-
         const loggedID = await getLoggedID(req, res);
         if (editing) {
-            if (!jsonShoppingLists.some(shoppingList => shoppingList.id == jsonData.id && shoppingList.owner == loggedID)) {
-                res.status(400).send({
-                    errorMessage: "Shopping list does not exist",
+            try {
+                await ShoppingList.updateOne({_id: jsonData.id, owner: loggedID}, {name: jsonData.name, slug});
+            } catch(e) {
+                res.status(409).send({
+                    errorMessage: "Logged user not owner of list or list does not exist",
                 });
                 return;
             }
-            newShoppingLists = jsonShoppingLists.map(shoppingList => shoppingList.id == jsonData.id ? {...shoppingList, name: jsonData.name, slug} : shoppingList);
         } else {
             const _shoppingList = new ShoppingList({
                 name: jsonData.name,
@@ -88,11 +73,8 @@ router.post("/edit-or-create", validate([
             });
 
             await _shoppingList.save();
-
-            //newShoppingList = {name: jsonData.name, slug, owner: loggedID, members: [], "shopping-items": []};
         }
 
-        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
         res.send({message: "Ok", slug});
     } catch (e) {
         res.status(500).send({
@@ -103,29 +85,21 @@ router.post("/edit-or-create", validate([
 
 router.post("/leave/:id", async (req, res) => {    
     try {
-        if (isNaN(Number(req.params.id))) {
-            res.status(400).send({
-                errorMessage: "Id must be integer",
-            });
-            return;
-        }
-
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-
         const loggedID = await getLoggedID(req, res);
 
-        if (!jsonShoppingLists.some(shoppingList => shoppingList.id == Number(req.params.id) && shoppingList.members.includes(loggedID))) {
-            res.status(400).send({
-                errorMessage: "Shopping list does not exist",
+        let _shoppingList;
+        try {
+            _shoppingList = await ShoppingList.findOne({_id: req.params.id, members: {"$in":loggedID}});
+            if (!_shoppingList) throw Error("Not found");
+        } catch(e) {
+            res.status(409).send({
+                errorMessage: "Logged user not member of list or list does not exist",
             });
             return;
-        }
+        } 
 
-        const newShoppingLists = jsonShoppingLists.map(shoppingList => shoppingList.id == Number(req.params.id) ? 
-            ({...shoppingList, members: shoppingList.members.filter(member => member != loggedID)}) : 
-            shoppingList
-        );
-        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
+        await ShoppingList.updateOne({_id: req.params.id}, {members: _shoppingList.members.filter(member => member != loggedID)});
+
         res.send({message: "Ok"});
     } catch (e) {
         res.status(500).send({
@@ -136,27 +110,19 @@ router.post("/leave/:id", async (req, res) => {
 
 router.post("/toggle-archived/:id",  async (req, res) => {
     try {
-        if (isNaN(Number(req.params.id))) {
-            res.status(400).send({
-                errorMessage: "Id must be integer",
-            });
-            return;
-        }
-        
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-
         const loggedID = await getLoggedID(req, res);
-
-        if (!jsonShoppingLists.some(jsonShoppingList => jsonShoppingList.owner == loggedID && jsonShoppingList.id == Number(req.params.id))) {
+        let _shoppingList;
+        try {
+            _shoppingList = await ShoppingList.findOne({_id: req.params.id, owner: loggedID});
+            if (!_shoppingList) throw Error("Not found");
+        } catch(e) {
             res.status(409).send({
-                errorMessage: "User is not owner of list",
+                errorMessage: "Logged user not owner of list or list does not exist",
             });
             return;
-        }
-
-        const newShoppingLists = jsonShoppingLists.map(shoppingList => (shoppingList.id == Number(req.params.id)) ? ({...shoppingList, archived: !shoppingList.archived}) : shoppingList);
-
-        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
+        } 
+        await ShoppingList.updateOne({_id: req.params.id}, {archived: !_shoppingList.archived});
+        
         res.send({message: "Ok"});
     } catch (e) {
         res.status(500).send({
@@ -166,38 +132,40 @@ router.post("/toggle-archived/:id",  async (req, res) => {
 });
 
 router.post("/change-members", validate([
-    body("id").isInt(), 
-    body("members").isArray().custom((value) => {
-        if (!value.every(Number.isInteger)) throw new Error("members must be array of integers");
-        return true;
-    }),
+    body("id"), 
+    body("members").isArray(),
 ]), async (req, res) => {
     try {
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-        const jsonUsers = await returnJSONFromFile("users", res);
-
-        const jsonData = req.body;
-
         const loggedID = await getLoggedID(req, res);
-        if (!jsonShoppingLists.some(shoppingList => shoppingList.id == jsonData.id && shoppingList.owner == loggedID)) {
-            res.status(400).send({
-                errorMessage: "Shopping list does not exist",
-            });
-            return;
-        }
-        
-        for (const _userID of jsonData.members) {
-            if (!jsonUsers.some(user => user.id == _userID)) {
-                res.status(400).send({
-                    errorMessage: "Member does not exist",
+        const jsonData = req.body;
+        for (const memberID of jsonData.members) {
+            const _user = await User.findOne({_id: memberID});
+            
+            if (!_user) {
+                res.status(404).send({
+                    errorMessage: "User not found",
                 });
                 return;
-            }
+            } 
         }
 
-        const newShoppingLists = jsonShoppingLists.map(shoppingList => shoppingList.id == jsonData.id ? ({...shoppingList, members: jsonData.members}) : shoppingList);
+        let _shoppingList;
+        try {
+            _shoppingList = await ShoppingList.findOne({
+                _id: jsonData.id, owner: loggedID,
+            });
+            if (!_shoppingList) throw Error("Not found");
+        } catch(e) {
+            res.status(409).send({
+                errorMessage: "Logged user not owner of list or list does not exist",
+            });
+            return;
+        } 
+        await ShoppingList.updateOne({ 
+            owner:  loggedID,
+            _id: jsonData.id, 
+        }, {members: jsonData.members ?? []});
 
-        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
         res.send({message: "Ok"});
     } catch (e) {
         res.status(500).send({
@@ -208,13 +176,10 @@ router.post("/change-members", validate([
 
 router.get("/", async (req, res) => {   
     try {
-        ShoppingList.find();
-        
-        
         const loggedID = await getLoggedID(req, res);
         
         const _shoppingLists = await ShoppingList.find({
-            $or: [{"_id":{"$in":loggedID["members"]}}, {"_id":loggedID["owner"]}],
+            $or: [{"members":{"$in":loggedID}}, {"owner":loggedID}],
         });
         res.send(_shoppingLists);
     } catch (e) {
@@ -226,24 +191,29 @@ router.get("/", async (req, res) => {
 
 router.get("/:slug", async (req, res) => {    
     try {
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-        const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
-        const jsonUsers = await returnJSONFromFile("users", res);
-
         const loggedID = await getLoggedID(req, res);
-
-        if (!jsonShoppingLists.some(shoppingList => shoppingList.slug == req.params.slug && (shoppingList.members.includes(loggedID) || shoppingList.owner == loggedID))) {
-            res.status(400).send({
-                errorMessage: "Shopping item does not exist",
+        
+        let _shoppingList;
+        try {
+            _shoppingList = await ShoppingList.findOne({
+                slug: req.params.slug, $or: [{"members":{"$in":loggedID}}, 
+                {"owner":loggedID}],
+            });
+            if (!_shoppingList) throw Error("Not found");
+        } catch(e) {
+            res.status(409).send({
+                errorMessage: "Logged user not member nor owner of list or list does not exist",
             });
             return;
-        }
-        
-        const _shoppingList = jsonShoppingLists.filter(shoppingList => shoppingList.slug == req.params.slug)[0];
+        } 
+
+        const _shoppingItems = await ShoppingItem.find({"_id":{"$in":_shoppingList["shoppingItems"]}});
+        const _users = await User.find();
+
         res.send({
             list: _shoppingList, 
-            items: jsonShoppingItems.filter(shoppingItem => _shoppingList["shopping-items"].includes(shoppingItem.id)),
-            users: jsonUsers,
+            items: _shoppingItems,
+            users: _users,
         });
     } catch (e) {
         res.status(500).send({

@@ -1,49 +1,28 @@
 import express from "express";
 import { body } from "express-validator";
-import fs from "fs";
-import {returnJSONFromFile} from "./utils/_fs.js";
-import {validate} from "./validation.js";
+import ShoppingItem from "./models/shopping-item.js";
+import ShoppingList from "./models/shopping-list.js";
 import { getLoggedID } from "./utils/middlewares.js";
+import { validate } from "./validation.js";
 
 const router = express.Router();
 
 router.delete("/delete/:id",  async (req, res) => {
     try {
-        if (isNaN(Number(req.params.id))) {
-            res.status(400).send({
-                errorMessage: "Id must be integer",
-            });
-            return;
-        }
-
-        const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-        
         const loggedID = await getLoggedID(req, res);
 
-        if (!jsonShoppingLists.some(shoppingList => shoppingList["shopping-items"].includes(Number(req.params.id)))) {
-            res.status(400).send({
-                errorMessage: "Shopping item is not under any list",
-            });
-            return;
-        }
-        const listFromItem = jsonShoppingLists.filter(shoppingList => shoppingList["shopping-items"].includes(Number(req.params.id)))[0];
-
-        if (!jsonShoppingItems.some(shoppingItem => shoppingItem.id == Number(req.params.id) && (listFromItem.members.includes(loggedID) || listFromItem.owner == loggedID))) {
-            res.status(400).send({
-                errorMessage: "Shopping item does not exist",
-            });
-            return;
-        }
-
-        const newShoppingItems = jsonShoppingItems.filter(shoppingItem => shoppingItem.id != Number(req.params.id));
-        const newShoppingLists = jsonShoppingLists.map(shoppingList => {
-            if (!shoppingList["shopping-items"].includes(Number(req.params.id))) return shoppingList;
-            return {...shoppingList, "shopping-items": shoppingList["shopping-items"].filter(shoppingItem => shoppingItem != Number(req.params.id))};
+        const shoppingListExists = await ShoppingList.exists({
+            $or: [{"shoppingItems":{"$in": req.params.id}}, {"members":{"$in":loggedID}}, {"owner":loggedID}],
         });
-        
-        fs.writeFileSync("./shopping-items.json", JSON.stringify(newShoppingItems));
-        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
+        if (!shoppingListExists) {
+            res.status(409).send({
+                errorMessage: "Logged user not member nor owner of list or list does not exist",
+            });
+            return;
+        } 
+
+        await ShoppingItem.deleteOne({_id: req.params.id});
+
         res.send({message: "Ok"});
     } catch (e) {
         res.status(500).send({
@@ -54,30 +33,21 @@ router.delete("/delete/:id",  async (req, res) => {
 
 router.post("/toggle-done/:id",  async (req, res) => {
     try {
-        if (isNaN(Number(req.params.id))) {
-            res.status(400).send({
-                errorMessage: "Id must be integer",
-            });
-            return;
-        }
-
-        const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-
         const loggedID = await getLoggedID(req, res);
-        if (!jsonShoppingLists.some(shoppingList => 
-            (shoppingList.members.includes(loggedID) || shoppingList.owner == loggedID) && 
-            shoppingList["shopping-items"].includes(Number(req.params.id)))
-        ) {
+
+        const shoppingListExists = await ShoppingList.exists({
+            $or: [{"shoppingItems":{"$in": req.params.id}}, {"members":{"$in":loggedID}}, {"owner":loggedID}],
+        });
+        if (!shoppingListExists) {
             res.status(409).send({
-                errorMessage: "Logged user not member nor user of list",
+                errorMessage: "Logged user not member nor owner of list or list does not exist",
             });
             return;
-        }
-        
-        const newShoppingItems = jsonShoppingItems.map(shoppingItem => (shoppingItem.id == Number(req.params.id)) ? ({...shoppingItem, done: !shoppingItem.done}) : shoppingItem);
+        } 
 
-        fs.writeFileSync("./shopping-items.json", JSON.stringify(newShoppingItems));
+        const _shoppingItem = await ShoppingItem.findOne({_id: req.params.id});
+        await ShoppingItem.updateOne({_id: req.params.id}, {done: !_shoppingItem.done});
+
         res.send({message: "Ok"});
     } catch (e) {
         res.status(500).send({
@@ -87,34 +57,37 @@ router.post("/toggle-done/:id",  async (req, res) => {
 });
 
 router.post("/create", validate([
-        body("shopping-list-id").isInt({min: 1}), 
+        body("shopping-list-id"), 
         body("name").isLength({min: 1, max: 150}),
         body("count").isInt({min: 1, max: 999}),
     ]), async (req, res) => {    
     try {
-        const jsonShoppingItems = await returnJSONFromFile("shopping-items", res);
-        const jsonShoppingLists = await returnJSONFromFile("shopping-lists", res);
-
         const jsonData = req.body;
-        let newShoppingItems = jsonShoppingItems;
-        let id = 0;
-        
-        const newShoppingItem = {name: jsonData.name, done: false, count: Number(jsonData.count)};
-        if (jsonShoppingItems.length != 0) {
-            id = jsonShoppingItems[jsonShoppingItems.length - 1].id + 1;
-            newShoppingItems = [...jsonShoppingItems, {id: id, ...newShoppingItem}];
-        } else {
-            id = 1;
-            newShoppingItems = [{id: id, ...newShoppingItem}];
-        }
+        const loggedID = await getLoggedID(req, res);
 
-        const newShoppingLists = jsonShoppingLists.map(shoppingList => {
-            if (shoppingList.id != req.body["shopping-list-id"]) return shoppingList;
-            return {...shoppingList, "shopping-items": [...shoppingList["shopping-items"], id]};
+        let shoppingList;
+        try {
+            shoppingList = await ShoppingList.findOne({
+                _id: jsonData["shopping-list-id"],
+                $or: [{"members":{"$in":loggedID}}, {"owner":loggedID}],
+            });
+        } catch(e) {
+            res.status(409).send({
+                errorMessage: "Logged user not member nor user of list or list does not exist",
+            });
+            return;
+        } 
+
+        const _shoppingItem = new ShoppingItem({
+            name: jsonData.name,
+            done: false,
+            count: Number(jsonData.count),
         });
 
-        fs.writeFileSync("./shopping-items.json", JSON.stringify(newShoppingItems));
-        fs.writeFileSync("./shopping-lists.json", JSON.stringify(newShoppingLists));
+        const newShoppingItem = await _shoppingItem.save();
+
+        await ShoppingList.updateOne({_id: jsonData["shopping-list-id"]}, {shoppingItems: [...shoppingList.shoppingItems, newShoppingItem._id]});
+
         res.send({message: "Ok"});
     } catch (e) {
         res.status(500).send({

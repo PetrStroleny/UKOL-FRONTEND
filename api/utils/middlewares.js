@@ -1,6 +1,4 @@
-import { returnJSONFromFile } from "./_fs.js";
-
-import User from "../models/user.js"; 
+import User from "../models/user.js";
 
 export async function LoggedMiddleWare(req, res, next) {
     try {
@@ -23,9 +21,9 @@ export async function LoggedMiddleWare(req, res, next) {
 
         const token = splitedToken[1];
 
-        const jsonUsers = await returnJSONFromFile("./users", res);
+        const _users = await User.find();
 
-        if (!jsonUsers.some(user => user.token == token)) {
+        if (!_users.some(user => user.token == token)) {
             res.status(409).send({
                 errorMessage: "User does not exist",
             });

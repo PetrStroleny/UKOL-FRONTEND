@@ -14,10 +14,10 @@ import ErrorPage from "./error-page";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 
 export interface ShoppingItemType {
+    _id: number
     name: string
     done: boolean
     count: number
-    id: number
 }
 
 const ShoppingList = () => {
@@ -40,6 +40,7 @@ const ShoppingList = () => {
 
     useEffect(() => {
         if (data?.list.archived && !showArchived) setShowArchived(true); 
+        console.log(data);
     }, [data]);
 
     if (error) return <ErrorPage/>;
@@ -64,7 +65,7 @@ const ShoppingList = () => {
                         }
                         setModalArchive(false);
                     }}
-                    id={data.list.id}
+                    id={data.list._id}
                 />
             }
             {modalConfirmShoppingListDelete && 
@@ -74,16 +75,16 @@ const ShoppingList = () => {
                         if (refetch) await mutateShoppingList();
                         setModalConfirmShoppingListDelete(false);
                     }}
-                    id={data.list.id}
+                    id={data.list._id}
                 />
             }
             {modalConfirmItemDeleteID != -1 &&
                 <ModalConfirmItemDelete
-                    name={data.list.name}
-                    id={data.list.id}
+                    name={data.items.filter((item) => item._id == modalConfirmItemDeleteID)[0].name}
+                    id={modalConfirmItemDeleteID}
                     hide={async(refetch?: boolean) => {
-                        if (refetch) await mutateShoppingList();
                         setModalConfirmItemDeleteID(-1);
+                        if (refetch) await mutateShoppingList();
                     }}
                     
                 />
@@ -99,7 +100,7 @@ const ShoppingList = () => {
                         }
                         setModalEditShoppingListName(false);
                     }}
-                    id={data.list.id}
+                    id={data.list._id}
                 />
             }
             {modalAddShoppingItem && 
@@ -108,12 +109,12 @@ const ShoppingList = () => {
                         if (refetch) await mutateShoppingList();
                         setModalAddShoppingItem(false);
                     }}
-                    id={data.list.id}
+                    id={data.list._id}
                 />
             }
             {modalChangeUsers &&
                 <ModalChangeUsers
-                    id={data.list.id}
+                    id={data.list._id}
                     _activeUsers={data.list.members}
                     users={data.users}
                     hide={async(refetch) => {
@@ -124,7 +125,7 @@ const ShoppingList = () => {
             }
             {modalLeaveShoppingListActive && 
                 <ModalLeaveShoppingList
-                    id={data.list.id}
+                    id={data.list._id}
                     name={data.list.name}
                     hide={async(refetch?: boolean) => {
                         if (refetch) await mutateShoppingList();
@@ -144,7 +145,7 @@ const ShoppingList = () => {
                             <Button 
                                 ref={optionsRef} 
                                 onClick={() => {
-                                    if (data.users.filter(user => user.id == data.list.owner)[0]?.token == activeUserToken) {
+                                    if (data.users.filter(user => user._id == data.list.owner)[0]?.token == activeUserToken) {
                                         showContextMenu(
                                             [
                                                 {
@@ -192,11 +193,11 @@ const ShoppingList = () => {
                                 }).filter((shoppingItem) => showDone ? true : shoppingItem.done == false).map((shoppingItem, i) => 
                                         <ShoppingItem 
                                             key={i} 
-                                            onDelete={() => setModalConfirmItemDeleteID(shoppingItem.id)}
+                                            onDelete={() => setModalConfirmItemDeleteID(shoppingItem._id)}
                                             {...shoppingItem}
                                             onDoneToogle={async () => {
                                                 try {
-                                                    await postData(`shopping-item/toggle-done/${shoppingItem.id}`, {}, activeUserToken);
+                                                    await postData(`shopping-item/toggle-done/${shoppingItem._id}`, {}, activeUserToken);
                                                     await mutateShoppingList();
                                                 } catch (e) {
                                                     console.error(e);
