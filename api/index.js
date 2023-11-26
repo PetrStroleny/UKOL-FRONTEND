@@ -31,10 +31,7 @@ async function main() {
   app.use(express.json()); // podpora pro application/json
   app.use(express.urlencoded({ extended: true })); // Podpora pro application/x-www-form-urlencoded
 
-  const corsOptions = {
-      origin: 'http://localhost:5173',
-  };
-  app.use(cors(corsOptions));
+  app.use(cors());
 
   app.post("/init", init);
 

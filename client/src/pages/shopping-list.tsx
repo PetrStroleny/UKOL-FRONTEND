@@ -80,7 +80,7 @@ const ShoppingList = () => {
             }
             {modalConfirmItemDeleteID != -1 &&
                 <ModalConfirmItemDelete
-                    name={data.items.filter((item) => item._id == modalConfirmItemDeleteID)[0].name}
+                    name={data.items.filter((item) => item._id == modalConfirmItemDeleteID)[0]?.name}
                     id={modalConfirmItemDeleteID}
                     hide={async(refetch?: boolean) => {
                         setModalConfirmItemDeleteID(-1);

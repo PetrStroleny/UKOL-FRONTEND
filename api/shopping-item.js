@@ -11,10 +11,10 @@ router.delete("/delete/:id",  async (req, res) => {
     try {
         const loggedID = await getLoggedID(req, res);
 
-        const shoppingListExists = await ShoppingList.exists({
+        const shoppingList = await ShoppingList.findOne({
             $or: [{"shoppingItems":{"$in": req.params.id}}, {"members":{"$in":loggedID}}, {"owner":loggedID}],
         });
-        if (!shoppingListExists) {
+        if (!shoppingList) {
             res.status(409).send({
                 errorMessage: "Logged user not member nor owner of list or list does not exist",
             });
@@ -22,6 +22,7 @@ router.delete("/delete/:id",  async (req, res) => {
         } 
 
         await ShoppingItem.deleteOne({_id: req.params.id});
+        await ShoppingList.updateOne({_id: shoppingList._id}, {shoppingItems: shoppingList.shoppingItems.filter(shoppingItem => shoppingItem._id != req.params.id)});
 
         res.send({message: "Ok"});
     } catch (e) {

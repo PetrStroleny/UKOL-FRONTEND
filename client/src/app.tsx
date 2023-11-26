@@ -25,14 +25,6 @@ function App() {
     setContextMenu(null);
   }
 
-  async function init() {
-    await postData("init", {}, "");
-    location.reload();
-  } 
-  useEffect(() => {
-    init();
-  }, []);
-
   return (
     <>
       <GlobalContext.Provider

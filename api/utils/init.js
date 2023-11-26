@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import ShoppingList from "../models/shopping-list.js";
 import ShoppingItem from "../models/shopping-item.js";
 
-export async function init(req, res) {
+export async function init() {
     try {
       const users = await User.find();
       const shoppingLists = await ShoppingList.find();
@@ -50,11 +50,8 @@ export async function init(req, res) {
         });
         await _newShoppingList.save();
       }
-      res.send({message: "Ok"});
     } catch (e) {
-        res.status(500).send({
-            errorMessage: "Internal server error",
-        });
+      console.log("Error while initting data");
     }
 }
 
