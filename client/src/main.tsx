@@ -81,6 +81,7 @@ const GlobalStyles = css`
         background-color: ${Theme.content.secondary};
       } 
     }
+
     &:not(.dark-mode ){
       color: ${Theme.content.primary};
       background-color: ${Theme.background.secondary};

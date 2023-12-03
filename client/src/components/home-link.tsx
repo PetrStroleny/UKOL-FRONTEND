@@ -31,6 +31,10 @@ const Wrapper = styled(Link)<{hrefactive: boolean}>`
     max-width: 250px;
     border: 2px solid ${p => p.theme.background.tertiary};
     border-radius: 16px;
+
+    @media only screen and (max-width: ${p => p.theme.breakPoints.mobile}px) {
+        max-width: 100%;
+    }
     
     > i {
         margin-left: 10px;

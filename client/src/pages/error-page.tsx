@@ -1,5 +1,4 @@
 import { useContext } from "react";
-import { Helmet } from "react-helmet";
 import { GlobalContext, getTextAfterLanguage } from "../utils/contexts";
 
 const ErrorPage = () => {

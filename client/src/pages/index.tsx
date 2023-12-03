@@ -16,7 +16,7 @@ const HomePage = () => {
 
     if (error) return <ErrorPage/>;
 
-    if (!data) return <>Načítání...</>;
+    if (!data) return <>{getTextAfterLanguage("Náčítání...", "Loading...", activeLanguage)}</>;
 
     return (
         <>
@@ -62,6 +62,10 @@ const Wrapper = styled("div")`
 
         gap: 15px;
         margin-bottom: 20px;
+
+        @media only screen and (max-width: ${p => p.theme.breakPoints.mobile}px) {
+            flex-direction: column;
+        }
     }
 `;
 

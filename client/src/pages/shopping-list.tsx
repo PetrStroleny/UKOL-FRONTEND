@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Helmet } from "react-helmet";
 import useSWR, { mutate } from "swr";
 import { useParams } from "wouter";
 import Button, { ButtonType } from "../components/button";
@@ -9,9 +8,9 @@ import EmptyState from "../components/emptyState";
 import ShoppingItem from "../components/shopping-item";
 import ShoppingItemsWrapper from "../components/shopping-items-wrapper";
 import { ModalAddShoppingItem, ModalArchive, ModalChangeUsers, ModalConfirmItemDelete, ModalConfirmShoppingListDelete, ModalEditShoppingListName, ModalLeaveShoppingList } from "../components/shopping-list-actions";
+import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 import { GlobalContext, ShoppingListType, User, getTextAfterLanguage } from "../utils/contexts";
 import ErrorPage from "./error-page";
-import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 
 export interface ShoppingItemType {
     _id: number
@@ -44,7 +43,7 @@ const ShoppingList = () => {
 
     if (error) return <ErrorPage/>;
 
-    if (!data) return <>Načítání...</>
+    if (!data) return <>{getTextAfterLanguage("Náčítání...", "Loading...", activeLanguage)}</>
     
     return (
         <>
@@ -173,7 +172,7 @@ const ShoppingList = () => {
                                     );                           
                                 }}
                             >
-                                <i className="fa fa-ellipsis" />
+                                <i className="fa fa-ellipsis white-text" />
                             </Button>
                         </div>
                         

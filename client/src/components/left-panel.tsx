@@ -6,6 +6,7 @@ import ErrorPage from "../pages/error-page";
 import { GlobalContext, Languague, ShoppingListType, User, getLabelFromLanguage, getTextAfterLanguage } from "../utils/contexts";
 import Button, { ButtonType } from "./button";
 import LeftPanelLink from "./left-panel-link";
+import { css } from "@emotion/react";
 
 const LeftPanel = () => {
     const {showContextMenu, activeUserToken, setActiveUserToken, showArchived, setShowArchived, activeLanguage, setActiveLanguage} = useContext(GlobalContext);
@@ -15,6 +16,7 @@ const LeftPanel = () => {
     const [_, setLocation] = useLocation();
 
     const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
+
     const [darkModeActive, setDarkModeActive] = useState(false);
 
     const userRef = useRef(null);   
@@ -25,7 +27,6 @@ const LeftPanel = () => {
     }, [activeUserToken]);
 
     useEffect(() => {
-        mutate("shopping-list");
         if (darkModeActive) {
             document.body.classList.add("dark-mode");
             return;
@@ -35,14 +36,28 @@ const LeftPanel = () => {
 
     if (shoppingListsError || usersError) return <ErrorPage/>;
 
-    if (!shoppingLists || !users) return <>Načítání...</>;
+    if (!shoppingLists || !users) return <>{getTextAfterLanguage("Náčítání...", "Loading...", activeLanguage)}...</>;
 
     return (
-        <Wrapper className="tertiary-background">
+        <>
+            <MobileHeader className="primary-background hide-on-desktop">
+                <Link href="/">
+                    <Button buttonType={ButtonType.SECONDARY}>
+                        <p className="white-text">
+                            <i className="fa fa-cart-shopping" />
+                            {getTextAfterLanguage("Domů", "Home", activeLanguage)}
+                        </p>
+                    </Button>
+                </Link>
+                <Button className="white-text" buttonType={ButtonType.SECONDARY} onClick={() => setMobileMenuOpened(p => !p)}>
+                    {getTextAfterLanguage(mobileMenuOpened ? "Zavřít menu" : "Menu", mobileMenuOpened ? "Close menu" : "Menu", activeLanguage)}
+                </Button>
+            </MobileHeader>
+            <Wrapper className="tertiary-background" show={mobileMenuOpened}>
             <div>
                 <div>
-                    <Link href="/">
-                        <Button buttonType={ButtonType.SECONDARY}>
+                    <Link  href="/">
+                        <Button className="hide-on-mobile" buttonType={ButtonType.SECONDARY}>
                             <p>
                                 <i className="fa fa-cart-shopping" />
                                 {getTextAfterLanguage("Domů", "Home", activeLanguage)}
@@ -70,9 +85,7 @@ const LeftPanel = () => {
                         {getLabelFromLanguage(activeLanguage, activeLanguage)}
                     </Button>
                     <Button 
-                        onClick={() =>
-                            setDarkModeActive(p => !p)
-                        } 
+                        onClick={() => setDarkModeActive(p => !p)} 
                     >
                         {darkModeActive ? "Light mode" : "Dark mode"}
                     </Button>
@@ -110,15 +123,50 @@ const LeftPanel = () => {
                 </p>
             </UserDiv>
         </Wrapper>
+        </>
     );
 }
-const Wrapper = styled("header")`
+
+const MobileHeader = styled("header")`
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    padding: 0px 10px;
+    height: 55px;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    z-index: 4;
+    border-bottom: 1px solid ${p => p.theme.inverse.content.primary};
+
+    > button > p > i {
+        margin-right: 5px;
+    }
+`;
+
+const Wrapper = styled("header")<{show: boolean}>`
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     position: fixed;
     padding: 8px 0px;
     overflow-y: auto;
+    width: 300px;
+    max-height: 100vh;
+    min-height: 100vh;
+    box-shadow: 0px 0.8px 0.9px ${p => p.theme.background.secondary},0px 1.6px 3.6px ${p => p.theme.background.secondary};
+
+    @media screen and (max-width: ${p => p.theme.breakPoints.mobile}px) {
+        transform: translateY(-100%);
+        width: 100%;
+        min-height: calc(100vh - 55px);
+        max-height: calc(100vh - 55px);
+        transition: transform 0.5s;
+        ${p => p.show && css`
+            transform: translateY(55px);
+        `}
+    }
 
     > div:first-of-type {
         display: flex;
@@ -148,10 +196,6 @@ const Wrapper = styled("header")`
             flex-direction: column;
         }
     }
-    width: 300px;
-    max-height: 100vh;
-    min-height: 100vh;
-    box-shadow: 0px 0.8px 0.9px ${p => p.theme.background.secondary},0px 1.6px 3.6px ${p => p.theme.background.secondary};
 `;
 
 const UserDiv = styled("div")`

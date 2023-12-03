@@ -56,8 +56,14 @@ const Page = styled("div")`
 
   > div:last-of-type {
     width: 100%;
-    margin-left: 320px;
     padding: 40px 40px 160px 40px;  
+
+    @media screen and (min-width: ${p => p.theme.breakPoints.mobile}px) {
+      margin-left: 320px;
+    }
+    @media screen and (max-width: ${p => p.theme.breakPoints.mobile}px) {
+      margin-top: 55px;
+    }
   }
 `;
 
