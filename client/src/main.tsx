@@ -59,10 +59,44 @@ const GlobalStyles = css`
 
   body {
     font-size: 14px;
-    background-color: ${Theme.background.secondary};
-
+    
     &.scroll-disabled {
-        overflow-y: hidden;
+      overflow-y: hidden;
+    }
+    
+    &.dark-mode {
+      color: ${Theme.inverse.content.primary};
+      background-color: ${Theme.content.primary};
+
+      *.white-text {
+        color: ${Theme.inverse.content.primary};
+      } 
+      *.primary-background {
+        background-color: ${Theme.content.primary};
+      } 
+      *.secondary-background {
+        background-color: ${Theme.content.primary};
+      } 
+      *.tertiary-background {
+        background-color: ${Theme.content.secondary};
+      } 
+    }
+    &:not(.dark-mode ){
+      color: ${Theme.content.primary};
+      background-color: ${Theme.background.secondary};
+
+      *.white-text {
+        color: ${Theme.content.primary};
+      } 
+      *.primary-background {
+        background-color: ${Theme.background.primary};
+      } 
+      *.secondary-background {
+        background-color: ${Theme.background.secondary};
+      } 
+      *.tertiary-background {
+        background-color: ${Theme.background.tertiary};
+      } 
     }
   }
 

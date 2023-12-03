@@ -1,15 +1,16 @@
+import { useContext } from "react";
 import { Helmet } from "react-helmet";
+import { GlobalContext, getTextAfterLanguage } from "../utils/contexts";
 
-const ErrorPage = () => (
-    <>
-        <Helmet>
-            <meta property="og:title" content="Stránka nebyla nalezena | PETR LIST"/>
-            <title>Stránka nebyla nalezena | PETR LIST</title>
-        </Helmet>
-        404 : Stránka nebyla nalezena
-    </>
-);
+const ErrorPage = () => {
+    const { activeLanguage } = useContext(GlobalContext);
 
+    return (
+        <>
+            404 : {getTextAfterLanguage("Stránka nebyla nalezena", "Page not found", activeLanguage)}
+        </>
+    );
+}
 
 
 export default ErrorPage;

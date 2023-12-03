@@ -17,7 +17,9 @@ async function main() {
   const port = process.env.PORT || 8000;
 
   // Conncet MONGO DB 
-  const dbURI = "mongodb://localhost:27017/shoppinglist";
+  //const dbURI = "mongodb://localhost:27017/shoppinglist";
+    // Conncet MONGO DB 
+    const dbURI = "mongodb+srv://admin:test@cluster0.25shizm.mongodb.net/unicorn?retryWrites=true&w=majority";
   
   try {
     await mongoose.connect(dbURI);

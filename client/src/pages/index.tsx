@@ -4,11 +4,12 @@ import useSWR from "swr";
 import Button, { ButtonType } from "../components/button";
 import HomeLink from "../components/home-link";
 import { ModalAddShoppingList } from "../components/index-actions";
-import { GlobalContext, ShoppingListType } from "../utils/contexts";
+import { GlobalContext, ShoppingListType, getTextAfterLanguage } from "../utils/contexts";
 import ErrorPage from "./error-page";
 
 const HomePage = () => {
-    const { setShowArchived } = useContext(GlobalContext);
+    const { setShowArchived, activeLanguage } = useContext(GlobalContext);
+    
     const [modalAddShoppingList, setModalAddShoppingList] = useState(false);
 
     const { data, error, mutate } = useSWR<ShoppingListType[]>("shopping-list");
@@ -27,7 +28,7 @@ const HomePage = () => {
             }
             <Wrapper>
                 <Label>
-                    Nákupní seznamy
+                    {getTextAfterLanguage("Nákupní seznamy", "Shopping lists", activeLanguage)}
                 </Label>
                 <div>
                     {data.sort((a, b) => {
@@ -45,7 +46,7 @@ const HomePage = () => {
                     )}
                 </div>
                 <Button onClick={() => setModalAddShoppingList(true)} buttonType={ButtonType.PRIMARY}>
-                    Přidat nový nákupní seznam
+                    {getTextAfterLanguage("Přidat nový nákupní seznam", "Add new shopping list", activeLanguage)}
                 </Button>
             </Wrapper>
         </>

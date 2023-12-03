@@ -1,47 +1,83 @@
 import styled from "@emotion/styled";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import useSWR, {mutate} from "swr";
 import { Link, useLocation } from "wouter";
 import ErrorPage from "../pages/error-page";
-import { GlobalContext, ShoppingListType, User } from "../utils/contexts";
+import { GlobalContext, Languague, ShoppingListType, User, getLabelFromLanguage, getTextAfterLanguage } from "../utils/contexts";
 import Button, { ButtonType } from "./button";
 import LeftPanelLink from "./left-panel-link";
 
 const LeftPanel = () => {
-    const {showContextMenu, activeUserToken, setActiveUserToken, showArchived, setShowArchived} = useContext(GlobalContext);
+    const {showContextMenu, activeUserToken, setActiveUserToken, showArchived, setShowArchived, activeLanguage, setActiveLanguage} = useContext(GlobalContext);
     const { data: shoppingLists, error: shoppingListsError } = useSWR<ShoppingListType[]>("shopping-list");
     const { data: users, error: usersError } = useSWR<User[]>("user");
 
     const [_, setLocation] = useLocation();
 
+    const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
+    const [darkModeActive, setDarkModeActive] = useState(false);
+
     const userRef = useRef(null);   
+    const buttonHref = useRef(null);  
 
     useEffect(() => {
         mutate("shopping-list");
     }, [activeUserToken]);
+
+    useEffect(() => {
+        mutate("shopping-list");
+        if (darkModeActive) {
+            document.body.classList.add("dark-mode");
+            return;
+        } 
+        document.body.classList.remove("dark-mode");
+    }, [darkModeActive]);
 
     if (shoppingListsError || usersError) return <ErrorPage/>;
 
     if (!shoppingLists || !users) return <>Načítání...</>;
 
     return (
-        <Wrapper>
+        <Wrapper className="tertiary-background">
             <div>
                 <div>
                     <Link href="/">
                         <Button buttonType={ButtonType.SECONDARY}>
                             <p>
                                 <i className="fa fa-cart-shopping" />
-                                Domů
+                                {getTextAfterLanguage("Domů", "Home", activeLanguage)}
                             </p>
                         </Button>
                     </Link>
                     <Button 
                         onClick={() => setShowArchived(!showArchived)} buttonType={showArchived ? ButtonType.SECONDARY : ButtonType.PRIMARY} 
                     >
-                        {showArchived ? "Skrýt archivované" : "Zobrazit archivované"}
+                        {showArchived ? getTextAfterLanguage("Skrýt archivované", "Hide archived", activeLanguage) : getTextAfterLanguage("Zobrazit archivované", "Show archived", activeLanguage)}
                     </Button>
                 </div>
+                <div>
+                <Button 
+                        ref={buttonHref}
+                        onClick={() =>
+                            showContextMenu(
+                                (Object.keys(Languague) as Array<Languague>).map((key) => ({
+                                    label: getLabelFromLanguage(key, activeLanguage), 
+                                    action: () => setActiveLanguage(key)})),
+                                buttonHref.current,
+                            )
+                        } 
+                    >
+                        {getLabelFromLanguage(activeLanguage, activeLanguage)}
+                    </Button>
+                    <Button 
+                        onClick={() =>
+                            setDarkModeActive(p => !p)
+                        } 
+                    >
+                        {darkModeActive ? "Light mode" : "Dark mode"}
+                    </Button>
+                </div>
+
                 <div>
                     {shoppingLists.filter((shoppingList) => showArchived ? true : !shoppingList.archived).sort((a, b) => {
                                     if(a.archived == b.archived) return 0;
@@ -58,7 +94,7 @@ const LeftPanel = () => {
                 </div>
             </div>
 
-            <UserDiv className="hover-active" onClick={() =>
+            <UserDiv className="hover-active secondary-background" onClick={() =>
                 showContextMenu(
                     users.map(user => ({
                         label: user.name, 
@@ -82,7 +118,6 @@ const Wrapper = styled("header")`
     justify-content: space-between;
     position: fixed;
     padding: 8px 0px;
-    background-color: ${p => p.theme.background.tertiary};
     overflow-y: auto;
 
     > div:first-of-type {
@@ -98,6 +133,12 @@ const Wrapper = styled("header")`
             > button > p > i {
                 margin-right: 5px;
             }
+        }
+
+        > div:nth-of-type(2) {
+            display: flex;
+            padding: 10px;
+            gap: 10px;
         }
 
         > div:last-of-type {
@@ -120,7 +161,6 @@ const UserDiv = styled("div")`
     width: calc(100% - 16px);
     border-radius: 8px;
     margin: 8px 8px 0px 8px;
-    background-color: ${p => p.theme.background.secondary};
 
     > p {
         padding: 20px 0px;

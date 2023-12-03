@@ -9,7 +9,7 @@ import EmptyState from "../components/emptyState";
 import ShoppingItem from "../components/shopping-item";
 import ShoppingItemsWrapper from "../components/shopping-items-wrapper";
 import { ModalAddShoppingItem, ModalArchive, ModalChangeUsers, ModalConfirmItemDelete, ModalConfirmShoppingListDelete, ModalEditShoppingListName, ModalLeaveShoppingList } from "../components/shopping-list-actions";
-import { GlobalContext, ShoppingListType, User } from "../utils/contexts";
+import { GlobalContext, ShoppingListType, User, getTextAfterLanguage } from "../utils/contexts";
 import ErrorPage from "./error-page";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 
@@ -24,7 +24,7 @@ const ShoppingList = () => {
     const {shoppingListSlug} = useParams();
     const { data, error, mutate: mutateShoppingList } = useSWR<{list: ShoppingListType, items: ShoppingItemType[], users: User[]}>(`shopping-list/${shoppingListSlug}`);
     
-    const { activeUserToken, showContextMenu, showArchived, setShowArchived } = useContext(GlobalContext);
+    const { activeUserToken, showContextMenu, showArchived, setShowArchived, activeLanguage } = useContext(GlobalContext);
 
     const [modalEditShoppingListName, setModalEditShoppingListName] = useState(false);
     const [modalAddShoppingItem, setModalAddShoppingItem] = useState(false);
@@ -40,7 +40,6 @@ const ShoppingList = () => {
 
     useEffect(() => {
         if (data?.list.archived && !showArchived) setShowArchived(true); 
-        console.log(data);
     }, [data]);
 
     if (error) return <ErrorPage/>;
@@ -49,10 +48,6 @@ const ShoppingList = () => {
     
     return (
         <>
-            <Helmet>
-                <meta property="og:title" content={`${location} | PETR LIST}`}/>
-                <title>List | PETR LIST</title>
-            </Helmet>
             {modalArchive &&
                 <ModalArchive
                     shoppingListName={data.list.name}
@@ -93,7 +88,7 @@ const ShoppingList = () => {
                 <ModalEditShoppingListName
                     defaultValue={data.list.name}
                     hide={async(newSlug?: string) => {
-                        if (newSlug) {
+                        if (typeof newSlug == "string") {
                             window.location.href = `/${newSlug}`;
                             await mutateShoppingList();
                             await mutate("shopping-list");
@@ -149,19 +144,19 @@ const ShoppingList = () => {
                                         showContextMenu(
                                             [
                                                 {
-                                                    label: "Změnit název", 
+                                                    label: getTextAfterLanguage("Změnit název", "Change name", activeLanguage), 
                                                     action: () => setModalEditShoppingListName(true),
                                                 },
                                                 {
-                                                    label: data.list.archived ? "Zrušit archivaci" : "Archivovat", 
+                                                    label: data.list.archived ? getTextAfterLanguage("Zrušit archivaci", "Cancel archivation", activeLanguage) : getTextAfterLanguage("Archivovat", "Archive", activeLanguage), 
                                                     action: () => setModalArchive(true),
                                                 },
                                                 {
-                                                    label: "Upravit členy", 
+                                                    label: getTextAfterLanguage("Upravit členy", "Edit users", activeLanguage), 
                                                     action: () => setModalChangeUsers(true),
                                                 },
                                                 {
-                                                    label: "Odstranit seznam", 
+                                                    label: getTextAfterLanguage("Odstranit seznam", "Delete shopping list", activeLanguage), 
                                                     action: () => setModalConfirmShoppingListDelete(true),
                                                 },
                                             ], optionsRef.current
@@ -171,7 +166,7 @@ const ShoppingList = () => {
                                     showContextMenu(
                                         [
                                             {
-                                                label: "Odejít", 
+                                                label: getTextAfterLanguage("Odejít", "Leave", activeLanguage), 
                                                 action: () => setModalLeaveShoppingListActive(true),
                                             },
                                         ], optionsRef.current
@@ -184,7 +179,7 @@ const ShoppingList = () => {
                         
                         {data.items.length != 0 ? 
                             <>
-                                <CheckBox label="Zobrazit dokončené" onClick={() => setShowDone(p => !p)} checked={showDone} />
+                                <CheckBox label={getTextAfterLanguage("Zobrazit dokončené", "Show done", activeLanguage)} onClick={() => setShowDone(p => !p)} checked={showDone} />
                                 <ShoppingItemsWrapper>
                                     {data.items.sort((a, b) => {
                                     if(a.done == b.done) return 0;
@@ -212,14 +207,14 @@ const ShoppingList = () => {
                             </>    
                             :
                             <EmptyState
-                                label="Žádné položky"
-                                description="Tento nákupní seznam nemá žádné položky"
+                                label={getTextAfterLanguage("Žádné položky", "No items", activeLanguage)}
+                                description={getTextAfterLanguage("Tento nákupní seznam nemá žádné položky", "This shopping list has no items", activeLanguage)}
                             />
                     }
                         
                         <div style={{display: "flex", "justifyContent": "center"}}>
-                            <Button onClick={() => setModalAddShoppingItem(true)} buttonType={ButtonType.PRIMARY}>
-                                Přidat Položku
+                            <Button onClick={() => setModalAddShoppingItem(true)} buttonType={ButtonType.PRIMARY}>       
+                                {getTextAfterLanguage("Přidat Položku", "Add item", activeLanguage)}
                             </Button>
                         </div>
                     </>

@@ -6,7 +6,7 @@ import Input from "./input";
 import Modal, { ModalButtons, ModalDescription } from "./modal";
 import ModalForm from "./modal-form";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
-import { GlobalContext, User } from "../utils/contexts";
+import { GlobalContext, User, getTextAfterLanguage } from "../utils/contexts";
 import { useLocation } from "wouter";
 import { validateIsNumber } from "../utils/form";
 
@@ -72,7 +72,7 @@ interface ModalEditShoppingListNameFrom {
 }
 
 export const ModalEditShoppingListName: FC<ModalEditShoppingListNameProps> = ({hide, id, defaultValue}) => {
-    const { activeUserToken } = useContext(GlobalContext);
+    const { activeUserToken, activeLanguage } = useContext(GlobalContext);
 
     const { control, handleSubmit } = useForm<ModalEditShoppingListNameFrom>({ defaultValues: { name: defaultValue } });
 
@@ -95,25 +95,25 @@ export const ModalEditShoppingListName: FC<ModalEditShoppingListNameProps> = ({h
     return (
         <ModalForm 
             onSubmit={handleSubmit(onSubmit)}
-            heading="Změnit název nákupního listu" 
+            heading={getTextAfterLanguage("Změnit název nákupního listu", "Change name of shopping list", activeLanguage)}
             hide={hide}
         >
             <Input 
                 name="name" 
                 control={control} 
-                rules={{ required: { message: "Vyplňte prosím název nákupního list", value: true } }}
+                rules={{ required: { message: getTextAfterLanguage("Vyplňte prosím název nákupního list", "Please fill name of shopping list", activeLanguage), value: true } }}
                 placeholder="Název"
             />
 
             <ModalButtons>
                 <div>
                     <Button disabled={loading} type="button" onClick={() => hide()}>
-                        Zrušit
+                        {getTextAfterLanguage("Zrušit", "Cancel", activeLanguage)}
                     </Button>
                 </div>
                 <div>
                     <Button loading={loading} buttonType={ButtonType.PRIMARY}>
-                        Potvrdit
+                        {getTextAfterLanguage("Potvrdit", "Change", activeLanguage)}
                     </Button>
                 </div>
             </ModalButtons>
@@ -132,7 +132,7 @@ interface ModalAddShoppingItemFrom {
 }
 
 export const ModalAddShoppingItem: FC<ModalAddShoppingItemProps> = ({hide, id}) => {
-    const { activeUserToken } = useContext(GlobalContext);
+    const { activeUserToken, activeLanguage } = useContext(GlobalContext);
 
     const { control, handleSubmit } = useForm<ModalAddShoppingItemFrom>({ defaultValues: { name: "", count: 1 } });
 
@@ -156,14 +156,14 @@ export const ModalAddShoppingItem: FC<ModalAddShoppingItemProps> = ({hide, id}) 
     return (
         <ModalForm 
             onSubmit={handleSubmit(onSubmit)}
-            heading="Přidat položku" 
+            heading={getTextAfterLanguage("Přidat položku", "Add item", activeLanguage)}
             hide={hide}
         >
             <Input 
                 name="name" 
                 control={control} 
-                rules={{ required: { message: "Vyplňte prosím název položky", value: true } }}
-                placeholder="Název"
+                rules={{ required: { message: getTextAfterLanguage("Vyplňte prosím název položky", "Please fill the name of item", activeLanguage), value: true } }}
+                placeholder={getTextAfterLanguage("Název", "Name", activeLanguage)}
             />
 
             <Input 
@@ -172,27 +172,30 @@ export const ModalAddShoppingItem: FC<ModalAddShoppingItemProps> = ({hide, id}) 
                 number
                 customError={customPriceError ?? ""}
                 rules={{ 
-                    required: { message: "Vyplňte prosím počet položky", value: true },
+                    required: { message: getTextAfterLanguage("Vyplňte prosím počet položek", "Plase add the number of items", activeLanguage), value: true },
                     validate: (value: string) => validateIsNumber(
                         value, 
                         setCustomPriceError, 
                         999, 
                         false, 
-                        {negativeError: "Počet položky musí být kladné číslo", maxValueError: "Počet položky musí být menší než-li 999"},
+                        {
+                            negativeError: getTextAfterLanguage("Počet položek musí být kladné číslo", "The number of items must be positive", activeLanguage), 
+                            maxValueError: getTextAfterLanguage("Počet položky musí být menší než-li 999", "The number of items must be lower than 999", activeLanguage)
+                        },
                     ) 
                 }}
-                placeholder="Počet"
+                placeholder={getTextAfterLanguage("Počet", "Number of items", activeLanguage)}
             />
 
             <ModalButtons>
                 <div>
                     <Button disabled={loading} type="button" onClick={() => hide()}>
-                        Zrušit
+                        {getTextAfterLanguage("Zrušit", "Cancel", activeLanguage)}
                     </Button>
                 </div>
                 <div>
                     <Button loading={loading} buttonType={ButtonType.PRIMARY}>
-                        Přidat
+                        {getTextAfterLanguage("Přidat", "Add", activeLanguage)}
                     </Button>
                 </div>
             </ModalButtons>
@@ -207,7 +210,7 @@ interface ModalConfirmShoppingListDeleteProps {
 }
 
 export const ModalConfirmShoppingListDelete: FC<ModalConfirmShoppingListDeleteProps> = ({hide, id, shoppingListName}) => {
-    const { activeUserToken } = useContext(GlobalContext);
+    const { activeUserToken, activeLanguage } = useContext(GlobalContext);
 
     const [_, setLocation] = useLocation();
 
@@ -230,7 +233,7 @@ export const ModalConfirmShoppingListDelete: FC<ModalConfirmShoppingListDeletePr
 
     return (
         <Modal
-            heading={`Odstranit ${shoppingListName}`}
+            heading={`${getTextAfterLanguage("Odstranit", "Remove", activeLanguage)} ${shoppingListName}`}
             hide={hide}
         >
             <ModalDescription>
@@ -240,12 +243,12 @@ export const ModalConfirmShoppingListDelete: FC<ModalConfirmShoppingListDeletePr
             <ModalButtons>
                 <div>
                     <Button disabled={loading} onClick={() => hide()}>
-                        Zrušit
+                    {getTextAfterLanguage("Zrušit", "Cancel", activeLanguage)}
                     </Button>
                 </div>
                 <div>
                     <Button loading={loading} onClick={removeShoppingList} buttonType={ButtonType.TERTIARY}>
-                        Odstranit
+                    {getTextAfterLanguage("Odstranit", "Remove", activeLanguage)}
                     </Button>
                 </div>
             </ModalButtons>
@@ -260,7 +263,7 @@ interface ModalConfirmItemDeleteProps {
 }
 
 export const ModalConfirmItemDelete: FC<ModalConfirmItemDeleteProps> = ({hide, id, name: itemName}) => {
-    const { activeUserToken } = useContext(GlobalContext);
+    const { activeUserToken, activeLanguage } = useContext(GlobalContext);
 
     const [loading, setLoading] = useState(false);
 
@@ -283,18 +286,20 @@ export const ModalConfirmItemDelete: FC<ModalConfirmItemDeleteProps> = ({hide, i
             hide={hide}
         >
             <ModalDescription>
-                Opravdu chcete odstranit položku {itemName} z nákupního listu?
+            {getTextAfterLanguage("Opravdu chcete odstranit položku", "Do you really want to remove", activeLanguage)}
+            {itemName}
+            {getTextAfterLanguage("z nákupního listu?", "from the shopping list", activeLanguage)}
             </ModalDescription>
 
             <ModalButtons>
                 <div>
                     <Button disabled={loading} onClick={() => hide()}>
-                        Zrušit
+                    {getTextAfterLanguage("Zrušit", "Cancel", activeLanguage)}
                     </Button>
                 </div>
                 <div>
                     <Button loading={loading} onClick={removeItem} buttonType={ButtonType.TERTIARY}>
-                        Odstranit
+                    {getTextAfterLanguage("Odstranit", "Remove", activeLanguage)}
                     </Button>
                 </div>
             </ModalButtons>
@@ -309,7 +314,7 @@ interface ModalLeaveShoppingListProps {
 }
 
 export const ModalLeaveShoppingList: FC<ModalLeaveShoppingListProps> = ({name, hide, id}) => {
-    const { activeUserToken } = useContext(GlobalContext);
+    const { activeUserToken, activeLanguage } = useContext(GlobalContext);
 
     const [loading, setLoading] = useState(false);
 
@@ -335,18 +340,18 @@ export const ModalLeaveShoppingList: FC<ModalLeaveShoppingListProps> = ({name, h
             hide={hide}
         >
             <ModalDescription>
-                Opravdu chcete odejít z nákupního listu {name} ?
+            {getTextAfterLanguage("Opravdu chcete odejít z nákupního listu", "Do you really want to leave shopping list", activeLanguage)} {name} ?
             </ModalDescription>
 
             <ModalButtons>
                 <div>
                     <Button disabled={loading} onClick={() => hide()}>
-                        Zrušit
+                    {getTextAfterLanguage("Zrušit", "Cancel", activeLanguage)}
                     </Button>
                 </div>
                 <div>
                     <Button loading={loading} onClick={leaveShoppingList} buttonType={ButtonType.TERTIARY}>
-                        Odejít
+                        {getTextAfterLanguage("Odejít", "Leave", activeLanguage)}
                     </Button>
                 </div>
             </ModalButtons>
@@ -362,7 +367,7 @@ interface ModalChangeUsersProps {
 }
 
 export const ModalChangeUsers: FC<ModalChangeUsersProps> = ({hide, users, id, _activeUsers}) => {
-    const { activeUserToken } = useContext(GlobalContext);
+    const { activeUserToken, activeLanguage } = useContext(GlobalContext);
 
     const [activeUsers, setActiveUsers] = useState(_activeUsers);
 
@@ -383,7 +388,7 @@ export const ModalChangeUsers: FC<ModalChangeUsersProps> = ({hide, users, id, _a
 
     return (
         <Modal
-            heading="Upravit členy" 
+            heading={getTextAfterLanguage("Upravit členy", "Edit users", activeLanguage)} 
             hide={hide}
         >
             <Wrapper>
@@ -416,7 +421,7 @@ export const ModalChangeUsers: FC<ModalChangeUsersProps> = ({hide, users, id, _a
             <ModalButtons>
                 <div>
                     <Button disabled={loading} onClick={() => hide()}>
-                        Zrušit
+                    {getTextAfterLanguage("Zrušit", "Cancel", activeLanguage)}
                     </Button>
                 </div>
                 <div>
@@ -425,7 +430,7 @@ export const ModalChangeUsers: FC<ModalChangeUsersProps> = ({hide, users, id, _a
                         onClick={changeMembers}  
                         buttonType={ButtonType.PRIMARY}
                     >
-                        Potvrdit
+                        {getTextAfterLanguage("Potvrdit", "Edit", activeLanguage)}
                     </Button>
                 </div>
             </ModalButtons>

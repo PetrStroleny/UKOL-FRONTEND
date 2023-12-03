@@ -11,7 +11,7 @@ interface ShoppingItemProps extends ShoppingItemType {
 }
 
 const ShoppingItem: FC<ShoppingItemProps> = ({children, count, done, onDoneToogle, onDelete}) => (
-    <Wrapper className={done ? "done" : "" }>
+    <Wrapper className={done ? "done primary-background" : "primary-background" }>
         <p>
             {count}
         </p>    
@@ -38,11 +38,11 @@ const Wrapper = styled("div")`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: ${p => p.theme.background.primary};
 
+    border: 2px solid ${p => p.theme.inverse.content.primary};
+    margin: -2px;
     &.done {
-        border: 2px solid ${p => p.theme.primitives.green};
-        margin: -2px;
+        border-color: ${p => p.theme.primitives.green};
     }
 
     > p {

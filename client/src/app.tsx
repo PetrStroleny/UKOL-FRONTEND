@@ -5,7 +5,7 @@ import { ContextMenu, ContextMenuItem, ContextMenuRenderer, CursorPosition } fro
 import LeftPanel from "./components/left-panel";
 import HomePage from "./pages/index";
 import ShoppingList from "./pages/shopping-list";
-import { GlobalContext } from "./utils/contexts";
+import { GlobalContext, Languague } from "./utils/contexts";
 import { SWRConfig } from "swr";
 import { getData, postData } from "./network";
 
@@ -13,6 +13,8 @@ function App() {
   const [showArchived, setShowArchived] = useState(false);
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
   const [activeUserToken, setActiveUserToken] = useState("$2a$12$erYefxNdI/Cu1lVRV6za0.KdWVwgoqNZ79grqSkI6rxO9T5BtiNkC");
+  
+  const [activeLanguage, setActiveLanguage] = useState(Languague.CZE);
 
   function showContextMenu(items: ContextMenuItem[], snapTo?: HTMLElement, coordinates?: CursorPosition, activeItem?: number) {
     setTimeout(() => {
@@ -28,7 +30,7 @@ function App() {
   return (
     <>
       <GlobalContext.Provider
-        value={{ showArchived, setShowArchived, activeUserToken, setActiveUserToken, contextMenu, setContextMenu, showContextMenu, hideContextMenu}}
+        value={{ activeLanguage, setActiveLanguage, showArchived, setShowArchived, activeUserToken, setActiveUserToken, contextMenu, setContextMenu, showContextMenu, hideContextMenu}}
       >
         <ContextMenuRenderer/>
         <Router>

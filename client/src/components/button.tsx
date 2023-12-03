@@ -21,7 +21,12 @@ interface ButtonProps extends ComponentProps<"button"> {
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(({children, onClick, loading, buttonType, shape, ...props}, ref) => (
-    <Wrapper onClick={loading ? undefined : onClick} ref={ref} className={`${buttonType ?? "secondary-type"} ${shape ?? "rectangle"}`} {...props}>
+    <Wrapper 
+        onClick={loading ? undefined : onClick} 
+        ref={ref} 
+        className={`${buttonType ?? "secondary-type"} ${shape ?? "rectangle"}`} 
+        {...props}
+    >
         {loading ? <ProgressSpinner/> : children}
     </Wrapper>
     )
@@ -53,7 +58,6 @@ const Wrapper = styled("button")`
     &.${ButtonType.PRIMARY} {
         background-color: ${p => p.theme.primitives.green};
         color: ${p => p.theme.inverse.content.primary};
-        
         &:hover {
             opacity: 0.8;
         }

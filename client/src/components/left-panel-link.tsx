@@ -12,7 +12,7 @@ const LeftPanelLink: FC<LeftPanelLinkProps> = ({href, label, leading}) => {
     const [isActive] = useRoute(href);
     
     return(
-        <Wrapper href={href} className={isActive ? "isActive" : "" }>
+        <Wrapper href={href} className={isActive ? "isActive secondary-background" : "secondary-background"}>
             {leading}
             {label}
         </Wrapper>
@@ -24,7 +24,6 @@ const Wrapper = styled(Link)<{hrefactive: boolean}>`
     width: calc(100% - 16px);
     border-radius: 8px;
     margin: 0px 8px;
-    background-color: ${p => p.theme.background.secondary};
 
     > i {
         margin-right: 10px;

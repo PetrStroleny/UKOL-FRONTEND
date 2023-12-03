@@ -56,36 +56,39 @@ export async function init() {
 }
 
 const _users = [
-    {"name": "Jaromír", "token": "$2a$12$erYefxNdI/Cu1lVRV6za0.KdWVwgoqNZ79grqSkI6rxO9T5BtiNkC"},
-    {"name": "Jan", "token": "$2a$12$mx5Z50J92GuO7iLzeRLEGecz1mb8nvN/YM2Hzv36jZE9zrTIY3FHK"},
-    {"name": "Anna", "token": "$2a$12$wAh/R8s46jwhFYqnhod0QuV7c.l95oKmdqLSVGgMYgfChgT.f.U5O"},
+  { "_id": "65631c21dd49faa0c6ba4452", "name": "Jaromír", "token": "$2a$12$erYefxNdI/Cu1lVRV6za0.KdWVwgoqNZ79grqSkI6rxO9T5BtiNkC" },
+  { "_id": "65631c21dd49faa0c6ba4454", "name": "Jan", "token": "$2a$12$mx5Z50J92GuO7iLzeRLEGecz1mb8nvN/YM2Hzv36jZE9zrTIY3FHK" },
+  { "_id": "65631c21dd49faa0c6ba4456", "name": "Anna", "token": "$2a$12$wAh/R8s46jwhFYqnhod0QuV7c.l95oKmdqLSVGgMYgfChgT.f.U5O" },
 ];
 
 const _shoppingLists = [
-    {   
-    "name": "Pondělní oslava", 
-    "slug": "pondelni-oslava", 
-    "archived": false, 
-},
-{
-    "name": "Úterní oslava", 
-    "slug": "uterni-oslava", 
-    "archived": true, 
-},
-{
-    "name": "Středeční pivo", 
-    "slug": "stredecni-pivo", 
-    "archived": true, 
-}
+  {
+    "_id": "65631498669883d0659f611e",
+    "name": "Pondělní oslava",
+    "slug": "pondelni-oslava",
+    "archived": false
+  },
+  {
+    "_id": "65631c21dd49faa0c6ba446a",
+    "name": "Úterní oslava",
+    "slug": "uterni-oslava",
+    "archived": true,
+  },
+  {
+    "_id": "65631c21dd49faa0c6ba446c",
+    "name": "Středeční pivo",
+    "slug": "stredecni-pivo",
+    "archived": true,
+  }
 ];
 
 const _shoppingItems = [
-    {"name": "Dort", "done": false, "count": 1},
-    {"name": "Svíčky", "done": false, "count": 1},
-    {"name": "Džus", "done": false, "count": 1},
-    {"name": "Dort", "done": false, "count": 1},
-    {"name": "Svíčky", "done": false, "count": 1},
-    {"name": "Džus", "done": false, "count": 1},
-    {"name": "Pivo", "done": false, "count": 1},
-    {"name": "Okurky", "done": false, "count": 2},
+  { "_id": "65631c21dd49faa0c6ba4458", "name": "Dort", "done": false, "count": 1 },
+  { "_id": "65631c21dd49faa0c6ba445a", "name": "Svíčky", "done": false, "count": 1 },
+  { "_id": "65631c21dd49faa0c6ba445c", "name": "Džus", "done": false, "count": 1 },
+  { "_id": "65631c21dd49faa0c6ba445e", "name": "Dort", "done": false, "count": 1 },
+  { "_id": "65631c21dd49faa0c6ba4460", "name": "Svíčky", "done": false, "count": 1 },
+  { "_id": "65631c21dd49faa0c6ba4462", "name": "Džus", "done": false, "count": 1 },
+  { "_id": "65631c21dd49faa0c6ba4464", "name": "Pivo", "done": false, "count": 1 },
+  { "_id": "65631c21dd49faa0c6ba4466", "name": "Okurky", "done": false, "count": 2 },
 ];

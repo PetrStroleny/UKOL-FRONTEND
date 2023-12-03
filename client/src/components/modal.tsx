@@ -22,7 +22,7 @@ const Modal: FC<ModalProps> = ({hide, children, heading}) => {
 
   return(
     <Wrapper onClick={hide}>
-        <Content onClick={(e) => e.stopPropagation()}>
+        <Content className="primary-background" onClick={(e) => e.stopPropagation()}>
             <Header>
                 {heading}
             </Header>
@@ -47,7 +47,6 @@ const Wrapper = styled("div")`
 
 const Content = styled("div")`
   border-radius: 20px;
-  background-color: ${p => p.theme.background.primary};
   padding: 20px;
   width: 600px;
   border-radius: 12px;
