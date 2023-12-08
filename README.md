@@ -1,5 +1,5 @@
 # FRONTEND - React + TypeScript + Vite
-# BACKEND (JSON MOCK DATA) - Express
+# BACKEND - Express
 
 ### Připrava
 v složce client
