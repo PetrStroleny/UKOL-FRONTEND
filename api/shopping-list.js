@@ -37,26 +37,29 @@ router.delete("/delete/:id",  async (req, res) => {
 });
 
 router.post("/edit-or-create", validate([
-    body("id"), 
+    body("id").notEmpty(), 
     body("name").isLength({min: 1, max: 150}),
 ]), async (req, res) => {
     try {  
         const jsonData = req.body;
         const slug = slugify(jsonData.name);
         
-        const editing = jsonData.id != 0;
-        
-        const nameAlreadyExists = await ShoppingList.exists({_id: {$ne: jsonData.id}, slug: slug});
+        const editing = jsonData.id != 0;        
+
+        const nameAlreadyExists = await ShoppingList.exists({id: {$ne: jsonData.id}, slug: slug});
+
         if (nameAlreadyExists) {
             res.status(400).send({
                 errorMessage: "Shopping list with this name already exists",
             });
             return;
         }
-
+        
         const loggedID = await getLoggedID(req, res);
+
         if (editing) {
             try {
+                console
                 await ShoppingList.updateOne({_id: jsonData.id, owner: loggedID}, {name: jsonData.name, slug});
             } catch(e) {
                 res.status(409).send({
@@ -71,7 +74,7 @@ router.post("/edit-or-create", validate([
                 archived: false,
                 owner: loggedID,
             });
-
+            
             await _shoppingList.save();
         }
 
@@ -132,7 +135,7 @@ router.post("/toggle-archived/:id",  async (req, res) => {
 });
 
 router.post("/change-members", validate([
-    body("id"), 
+    body("id").notEmpty(), 
     body("members").isArray(),
 ]), async (req, res) => {
     try {
@@ -174,7 +177,8 @@ router.post("/change-members", validate([
     }
 });
 
-router.get("/", async (req, res) => {   
+
+router.get("/", async (req, res ) => {
     try {
         const loggedID = await getLoggedID(req, res);
         

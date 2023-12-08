@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import ShoppingList from "../models/shopping-list.js";
 import ShoppingItem from "../models/shopping-item.js";
 
-export async function init() {
+export async function init(initOnlyUsers) {
     try {
       const users = await User.find();
       const shoppingLists = await ShoppingList.find();
@@ -18,37 +18,39 @@ export async function init() {
         await _newUser.save();
       }
 
-      for (const _shoppingItem of _shoppingItems) {
-        const _newShoppingItem = new ShoppingItem(_shoppingItem);
-        shoppingItemIDs.push(_newShoppingItem.id);
-        await _newShoppingItem.save();
-      }
-      
-      for (let i = 0; i < _shoppingLists.length; i++) {
-        let currentShoppingItems = [];
-        switch (i) {
-          case 0: {
-            currentShoppingItems = [shoppingItemIDs[0], shoppingItemIDs[1], shoppingItemIDs[2]]; 
-            break;
-          };
-          case 1: {
-            currentShoppingItems = [shoppingItemIDs[3], shoppingItemIDs[4], shoppingItemIDs[5]];
-            break;
-          };
-          case 2: {
-            currentShoppingItems = [shoppingItemIDs[6], shoppingItemIDs[7]];
-            break;
-          };
+      if (!initOnlyUsers) {
+        for (const _shoppingItem of _shoppingItems) {
+          const _newShoppingItem = new ShoppingItem(_shoppingItem);
+          shoppingItemIDs.push(_newShoppingItem.id);
+          await _newShoppingItem.save();
         }
-
-
-        const _newShoppingList = new ShoppingList({
-          ..._shoppingLists[i], 
-          owner: userIDs[0], 
-          shoppingItems: currentShoppingItems,
-          members: [userIDs[1], userIDs[2]],
-        });
-        await _newShoppingList.save();
+        
+        for (let i = 0; i < _shoppingLists.length; i++) {
+          let currentShoppingItems = [];
+          switch (i) {
+            case 0: {
+              currentShoppingItems = [shoppingItemIDs[0], shoppingItemIDs[1], shoppingItemIDs[2]]; 
+              break;
+            };
+            case 1: {
+              currentShoppingItems = [shoppingItemIDs[3], shoppingItemIDs[4], shoppingItemIDs[5]];
+              break;
+            };
+            case 2: {
+              currentShoppingItems = [shoppingItemIDs[6], shoppingItemIDs[7]];
+              break;
+            };
+          }
+  
+  
+          const _newShoppingList = new ShoppingList({
+            ..._shoppingLists[i], 
+            owner: userIDs[0], 
+            shoppingItems: currentShoppingItems,
+            members: [userIDs[1], userIDs[2]],
+          });
+          await _newShoppingList.save();
+        }
       }
     } catch (e) {
       console.log("Error while initting data");

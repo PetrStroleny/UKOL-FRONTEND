@@ -22,3 +22,9 @@ v složce api
 ```
     npm start
 ```
+
+### Testing
+v složce api
+```
+    npm test
+```
