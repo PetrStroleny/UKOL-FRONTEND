@@ -1,5 +1,6 @@
 import {createContext} from "react";
 import {ContextMenu, ContextMenuItem, CursorPosition } from "../components/context-menu";
+import { ShoppingItemType } from "../pages/shopping-list";
 
 export interface User {
     _id: number
@@ -33,6 +34,7 @@ export interface ShoppingListType {
     name: string
     archived: boolean
     members: number[]
+    shoppingItems: ShoppingItemType[]
     owner: number
 }
 

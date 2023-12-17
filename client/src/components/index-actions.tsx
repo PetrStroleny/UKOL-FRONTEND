@@ -1,7 +1,7 @@
 import { FC, useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
-import { GlobalContext } from "../utils/contexts";
+import { GlobalContext, getTextAfterLanguage } from "../utils/contexts";
 import Button, { ButtonType } from "./button";
 import Input from "./input";
 import { ModalButtons } from "./modal";
@@ -18,7 +18,7 @@ interface ModalAddShoppingListFrom {
 export const ModalAddShoppingList: FC<ModalAddShoppingListProps> = ({hide}) => {
     const { control, handleSubmit } = useForm<ModalAddShoppingListFrom>({ defaultValues: { name: "" } });
     const [loading, setLoading] = useState(false);
-    const { activeUserToken } = useContext(GlobalContext);
+    const { activeUserToken, activeLanguage } = useContext(GlobalContext);
 
     async function onSubmit(data: ModalAddShoppingListFrom) {
         try {
@@ -36,7 +36,7 @@ export const ModalAddShoppingList: FC<ModalAddShoppingListProps> = ({hide}) => {
     return (
         <ModalForm 
             onSubmit={handleSubmit(onSubmit)}
-            heading="Přidat nákupní seznam" 
+            heading={getTextAfterLanguage("Přidat nákupní seznam", "Add shopping list", activeLanguage)}
             hide={() => hide(false)}
         >
             <Input 

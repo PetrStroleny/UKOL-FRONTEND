@@ -11,6 +11,8 @@ import { ModalAddShoppingItem, ModalArchive, ModalChangeUsers, ModalConfirmItemD
 import { GENERAL_ERROR_MESSAGE, postData } from "../network";
 import { GlobalContext, ShoppingListType, User, getTextAfterLanguage } from "../utils/contexts";
 import ErrorPage from "./error-page";
+import { Chart } from "chart.js";
+import { Theme } from "../style-variables";
 
 export interface ShoppingItemType {
     _id: number
@@ -40,6 +42,37 @@ const ShoppingList = () => {
     useEffect(() => {
         if (data?.list.archived && !showArchived) setShowArchived(true); 
     }, [data]);
+
+    const [currentChart, setCurrentChart] = useState<any>();
+    useEffect(() => {
+        if (data) {
+            console.log(data);
+            if (currentChart) {
+                currentChart.destroy();
+            }
+            setCurrentChart(new Chart(
+                document.getElementById("canvas"),
+                {
+                  type: "pie",
+                  data: {
+                    labels: [
+                        getTextAfterLanguage("Vyřešené", "Done", activeLanguage),
+                        getTextAfterLanguage("Nevyřešené", "Open", activeLanguage),
+                      ],
+                      datasets: [{
+                        label: 'My First Dataset',
+                        data: [data.items.filter(item => item.done).length, data.items.filter(item => !item.done).length],
+                        backgroundColor: [
+                          Theme.primitives.green,
+                          Theme.primitives.error,
+                        ],
+                        hoverOffset: 4
+                      }]
+                  }
+                }
+            ));
+        }
+    }, [data, activeLanguage]);
 
     if (error) return <ErrorPage/>;
 
@@ -217,6 +250,9 @@ const ShoppingList = () => {
                             </Button>
                         </div>
                     </>
+                }
+                {data.items.length != 0 &&
+                    <canvas id="canvas" style={{minHeight: "400px", maxHeight: "400px"}}/>
                 }
             </Wrapper>
         </>

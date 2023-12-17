@@ -71,7 +71,7 @@ const LeftPanel = () => {
                     </Button>
                 </div>
                 <div>
-                <Button 
+                    <Button 
                         ref={buttonHref}
                         onClick={() =>
                             showContextMenu(

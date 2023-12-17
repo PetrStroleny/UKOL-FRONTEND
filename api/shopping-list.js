@@ -185,6 +185,7 @@ router.get("/", async (req, res ) => {
         const _shoppingLists = await ShoppingList.find({
             $or: [{"members":{"$in":loggedID}}, {"owner":loggedID}],
         });
+
         res.send(_shoppingLists);
     } catch (e) {
         res.status(500).send({
